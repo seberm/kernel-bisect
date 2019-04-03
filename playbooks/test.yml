@@ -1,0 +1,12 @@
+---
+- hosts: all
+  tasks:
+    - name: test connection
+      ping:
+
+    - name: ensure a list of packages installed
+      yum:
+        name: "{{ packages }}"
+      vars:
+        packages:
+        - grubby

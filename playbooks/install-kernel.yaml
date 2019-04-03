@@ -1,0 +1,40 @@
+---
+- hosts: all
+  tasks:
+    - name: copy kernel RPM
+      copy:
+        src: kernel.rpm
+        dest: /root/
+
+    - name: ensure kernel RPM
+      yum:
+        name: "{{ packages }}"
+      vars:
+        packages:
+            #- kernel.rpm
+          - kernel
+      when: >
+        ansible_os_family == "RedHat" and
+        ansible_distribution_major_version | int >= 7
+
+      #    - name: get installed kernel version
+      #      command: grubby --default-kernel
+      #      register: new_default_kernel
+
+      #    - name: set default kernel to the installed one
+      #      command: grubby --set-kernel /boot/vmlinuz-new_default_kernel.stdout
+
+    - name: get current default kernel using grubby
+      command: grubby --default-kernel
+      register: current_default_kernel
+
+    - name: "current default kernel (grub)"
+      debug: msg="{{ current_default_kernel.stdout }}"
+
+    - name: reboot system into newly installed kernel
+      reboot:
+        reboot_timeout: 600 # 10 minutes
+
+    - name: running kernel version
+      debug:
+        msg: '{{ansible_kernel}}'
