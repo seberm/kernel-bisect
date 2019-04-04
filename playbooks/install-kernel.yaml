@@ -1,28 +1,26 @@
 ---
 - hosts: all
+  vars:
+      kernel_pkg_path: "{{ kernel_pkg_path }}"
+      kernel_pkg: "{{ kernel_pkg }}"
   tasks:
-    - name: copy kernel RPM
+    - name: copy kernel inside DUTs
       copy:
-        src: kernel.rpm
+        src: "{{ kernel_pkg_path }}"
         dest: /root/
 
-    - name: ensure kernel RPM
+    - name: install kernel package
       yum:
-        name: "{{ packages }}"
-      vars:
-        packages:
-            #- kernel.rpm
-          - kernel
-      when: >
-        ansible_os_family == "RedHat" and
-        ansible_distribution_major_version | int >= 7
+        name: "/root/{{ kernel_pkg }}"
+        state: present
 
-      #    - name: get installed kernel version
-      #      command: grubby --default-kernel
-      #      register: new_default_kernel
+    # initramfs is also generateed automatically by installator
+    # This is done automatically by installator
+#    - name: regenerate GRUB configuration
+#      command: grub2-mkconfig -o /boot/grub2/grub.cfg
 
-      #    - name: set default kernel to the installed one
-      #      command: grubby --set-kernel /boot/vmlinuz-new_default_kernel.stdout
+    - name: set default kernel to the installed one (only for next boot)
+      command: grub2-reboot 0
 
     - name: get current default kernel using grubby
       command: grubby --default-kernel
@@ -31,10 +29,13 @@
     - name: "current default kernel (grub)"
       debug: msg="{{ current_default_kernel.stdout }}"
 
+    - name: enforce system reboot on panic after N seconds
+      command: grubby --args="panic=10" --update-kernel=ALL
+
     - name: reboot system into newly installed kernel
       reboot:
         reboot_timeout: 600 # 10 minutes
 
     - name: running kernel version
       debug:
-        msg: '{{ansible_kernel}}'
+        msg: "{{ ansible_kernel }}"
