@@ -1,0 +1,14 @@
+# Hosts inventory
+
+[all:vars]
+ansible_connection=ssh
+ansible_user=root
+ansible_ssh_pass=toor
+
+[duts]
+some-host1.example.com
+some-host2.example.com
+
+[duts-mgmt]
+some-host1-mgmt.example.com
+some-host2-mgmt.example.com
