@@ -5,12 +5,12 @@
       kernel_pkg_path: "{{ kernel_pkg_path }}"
       kernel_pkg: "{{ kernel_pkg }}"
   tasks:
-    - name: copy kernel inside DUTs
+    - name: Copy kernel inside DUTs
       copy:
         src: "{{ kernel_pkg_path }}"
         dest: /root/
 
-    - name: install kernel package
+    - name: Install kernel package
       yum:
         name: "/root/{{ kernel_pkg }}"
         state: present
@@ -20,7 +20,7 @@
 #    - name: regenerate GRUB configuration
 #      command: grub2-mkconfig -o /boot/grub2/grub.cfg
 
-    - name: set default kernel to the installed one (only for next boot)
+    - name: Set default kernel to the installed one (only for next boot)
       command: grub2-reboot 0
 
     - name: get current default kernel using grubby
@@ -33,10 +33,10 @@
     - name: enforce system reboot on panic after N seconds
       command: grubby --args="panic=10" --update-kernel=ALL
 
-    - name: reboot system into newly installed kernel
+    - name: Reboot system into newly installed kernel
       reboot:
         reboot_timeout: 600 # 10 minutes
 
-    - name: running kernel version
+    - name: Running kernel version
       debug:
         msg: "{{ ansible_kernel }}"
