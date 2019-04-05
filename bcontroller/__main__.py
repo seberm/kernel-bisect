@@ -206,6 +206,7 @@ def bisect(git_tree):
 
 
 @click.command(
+    name="start",
     help="Start git bisect.",
 )
 @click.argument(
@@ -221,6 +222,7 @@ def bisect_start(bad, good):
 
 
 @click.command(
+    name="run",
     help="Automatically run git bisect using a script (given by FILENAME) which can tell if the current source code is good or bad",
 )
 @click.argument(
@@ -232,6 +234,7 @@ def bisect_run(filename):
 
 
 @click.command(
+    name="good",
     help="Mark current revision as GOOD.",
 )
 @click.argument(
@@ -243,6 +246,7 @@ def bisect_good(revs):
 
 
 @click.command(
+    name="bad",
     help="Mark current revision as BAD.",
 )
 @click.argument(
@@ -254,6 +258,7 @@ def bisect_bad(revs):
 
 
 @click.command(
+    name="skip",
     help="Skip current revision. Try another one.",
 )
 def bisect_skip():
