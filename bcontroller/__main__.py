@@ -88,17 +88,26 @@ def kernel_install(from_rpm, reboot):
 )
 @click.option(
     "--cc",
-    help="Sets the CC nevironment variable to specified value when compiling the kernel.",
+    envvar="CC",
+    help="Override current CC environment variable to specified value when compiling the kernel.",
 )
 def build(git_tree, jobs, cc):
-    # TODO: CC
-    run_command([
-        "make",
-        "-C",
-        git_tree,
-        "-j",
-        jobs,
-    ])
+    # Change OS environment only for the following command, not for whole
+    # process
+    modified_env = os.environ.copy()
+    if cc:
+        modified_env["CC"] = cc
+
+    run_command(
+        [
+            "make",
+            "-C",
+            git_tree,
+            "-j",
+            str(jobs),
+        ],
+        env=modified_env,
+    )
 
 
 @click.command(
