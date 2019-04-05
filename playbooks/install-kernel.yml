@@ -2,17 +2,18 @@
 # TODO: Shouldn't be this module implemented as an Ansible task?
 - hosts: all
   vars:
-      kernel_pkg_path: "{{ kernel_pkg_path }}"
-      kernel_pkg: "{{ kernel_pkg }}"
+      in_kernel_pkg_path: "{{ kernel_pkg_path }}"
+      in_kernel_pkg: "{{ kernel_pkg }}"
+      in_reboot: "{{ reboot | default(False) }}"
   tasks:
     - name: Copy kernel inside DUTs
       copy:
-        src: "{{ kernel_pkg_path }}"
+        src: "{{ in_kernel_pkg_path }}"
         dest: /root/
 
     - name: Install kernel package
       yum:
-        name: "/root/{{ kernel_pkg }}"
+        name: "/root/{{ in_kernel_pkg }}"
         state: present
 
     # initramfs is also generateed automatically by installator
@@ -36,6 +37,8 @@
     - name: Reboot system into newly installed kernel
       reboot:
         reboot_timeout: 600 # 10 minutes
+      when: >
+        {{ in_reboot }} == True
 
     - name: Running kernel version
       debug:

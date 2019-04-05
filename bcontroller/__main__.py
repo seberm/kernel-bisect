@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 import subprocess
-from logging import debug
+from logging import debug, warning
 
 import click
 
@@ -57,16 +57,15 @@ def cli(log):
 def kernel_install(from_rpm, reboot):
     rpm_filename = os.path.basename(from_rpm)
 
-    # TODO: propagade reboot into ansible playbook?
-    if reboot:
-        raise NotImplementedError
+    if not reboot:
+        warning("kernel-install: not rebooting the kernel, option -R/--no-reboot is active.")
 
     run_command([
         "ansible-playbook",
         "--limit",
         "duts",
         os.path.join(_CUR_DIR, "../playbooks/install-kernel.yml"),
-        f"-e kernel_pkg_path={from_rpm} kernel_pkg={rpm_filename}",
+        f"-e kernel_pkg_path={from_rpm} kernel_pkg={rpm_filename} reboot={reboot}",
     ])
 
 
