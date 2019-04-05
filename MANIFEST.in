@@ -3,3 +3,4 @@ include LICENSE
 
 global-exclude *.pyc
 recursive-include bcontroller *.py
+recursive-include playbooks *.yml
