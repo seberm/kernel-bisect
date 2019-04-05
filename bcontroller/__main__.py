@@ -18,7 +18,7 @@ _CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 
 def run_command(args, stdout=subprocess.PIPE, stderr=None):
     debug("Running CMD: %s", args)
-    process = subprocess.Popen(args, stdout=stdout, stderr=stderr, check=True, universal_newlines=True)
+    process = subprocess.Popen(args, stdout=stdout, stderr=stderr)
     for c in iter(lambda: process.stdout.read(1), b''):
         sys.stdout.buffer.write(c)
         sys.stdout.flush()
