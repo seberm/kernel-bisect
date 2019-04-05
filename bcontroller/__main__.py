@@ -125,7 +125,7 @@ def reboot(use):
 
 
 @click.command(
-    help="Tells which way reboot the machine.",
+    help="Test connection to DUTs.",
 )
 def ping():
     run_command([
