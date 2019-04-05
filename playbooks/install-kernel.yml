@@ -1,4 +1,5 @@
 ---
+# TODO: Shouldn't be this module implemented as an Ansible task?
 - hosts: all
   vars:
       kernel_pkg_path: "{{ kernel_pkg_path }}"
