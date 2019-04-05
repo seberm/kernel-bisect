@@ -76,6 +76,7 @@ def kernel_install(from_rpm, reboot):
     "--git-tree",
     default=_CUR_DIR,
     show_default=True,
+    type=click.Path(exists=True),
     help="Path to the git working directory.",
 )
 @click.option(
@@ -162,6 +163,7 @@ def ping():
 )
 @click.argument(
     "filename",
+    type=click.Path(exists=True),
 )
 def run(filename):
     abs_path_filename = os.path.abspath(filename)
