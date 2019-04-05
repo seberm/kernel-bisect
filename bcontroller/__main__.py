@@ -61,6 +61,8 @@ def kernel_install(from_rpm, reboot):
 
     run_command([
         "ansible-playbook",
+        "--limit",
+        "duts",
         os.path.join(_CUR_DIR, "../playbooks/install-kernel.yml"),
         f"-e kernel_pkg_path={from_rpm} kernel_pkg={rpm_filename}",
     ])
@@ -130,6 +132,8 @@ def reboot(use):
 def ping():
     run_command([
         "ansible-playbook",
+        "--limit",
+        "duts",
         os.path.join(_CUR_DIR, "../playbooks/test.yml"),
     ])
 
