@@ -158,18 +158,19 @@ def ping():
 
 
 @click.command(
-    help="Copy and run specified file on DUTs. Print stdout and stderr onto standard outputs. As a program exit code return the remote process exit code.",
+    help="Copy and run file specified by FILENAME on DUTs. Print stdout and stderr onto standard outputs. This program exit code will be the same as the remote process exit code.",
 )
 @click.argument(
     "filename",
 )
 def run(filename):
+    abs_path_filename = os.path.abspath(filename)
     run_command([
         "ansible-playbook",
         "--limit",
         "duts",
         os.path.join(_CUR_DIR, "../playbooks/run.yml"),
-        f"-e filename={filename}",
+        f"-e filename={abs_path_filename}",
     ])
 
 
