@@ -16,9 +16,9 @@ PROGRAM_EPILOG = ""
 _CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
-def run_command(args, stdout=subprocess.PIPE, stderr=None):
+def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
     debug("Running CMD: %s", args)
-    process = subprocess.Popen(args, stdout=stdout, stderr=stderr)
+    process = subprocess.Popen(args, stdout=stdout, stderr=stderr, env=env)
     for c in iter(lambda: process.stdout.read(1), b''):
         sys.stdout.buffer.write(c)
         sys.stdout.flush()
