@@ -1,0 +1,14 @@
+---
+- hosts: all
+  vars:
+      in_filename: "{{ filename }}"
+  tasks:
+    - name: run local script on DUTs.
+      script: "{{ filename }}"
+      register: out_script
+      args:
+        chdir: /root
+        #executable: /bin/bash
+
+    - name: print output of script
+      debug: var=out_script
