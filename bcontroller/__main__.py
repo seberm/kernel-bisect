@@ -108,6 +108,8 @@ def build(git_tree, jobs, cc):
     type=click.Choice([
         # == Reboot over SSH
         "ansible",
+
+        # == System reset without waiting for OS
         "ipmi",
         "amtc",
         # "pdu",
@@ -117,13 +119,30 @@ def build(git_tree, jobs, cc):
     help="Tells which way reboot the machine."
 )
 def reboot(use):
-    run_command([
-        "ansible",
-        "-m",
-        "reboot",
-        "-a"
-        "reboot_timeout=0",
-    ])
+    # TODO: add support various methods of reboot
+
+    if use == "ipmi":
+        mgmt_host = ""  # TODO
+        mgmt_user = "ADMIN"
+        mgmt_password = "ADMIN"
+        run_command([
+            "ansible",
+            "-m",
+            "ipmi_power",
+            "-a",
+            f"state=reset name={mgmt_host} user={mgmt_user} password={mgmt_password}",
+
+            # Limit hosts
+            "mgmt"
+        ])
+    else:
+        run_command([
+            "ansible",
+            "-m",
+            "reboot",
+            "-a"
+            "reboot_timeout=0",
+        ])
 
 
 @click.command(
