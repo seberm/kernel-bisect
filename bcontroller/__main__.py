@@ -120,10 +120,13 @@ def build(git_tree, jobs, cc):
     type=click.Choice([
         # == Reboot over SSH
         "ansible",
-
         # == System reset without waiting for OS
         "ipmi",
         "amtc",
+
+        # == Restart system using the Beaker - is it possible? TODO
+        #"beaker",
+
         # "pdu",
     ]),
     default="ansible",
