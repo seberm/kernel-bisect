@@ -174,8 +174,85 @@ def run(filename):
     ])
 
 
+@click.group(
+    help="Control kernel bisect. This is basically a wrapper around git-bisect.",
+)
+@click.option(
+    "-C",
+    "--git-tree",
+    default=_CUR_DIR,
+    show_default=True,
+    type=click.Path(exists=True),
+    help="Path to the git working directory.",
+)
+def bisect(git_tree):
+    pass
+
+
+@click.command(
+    help="Start git bisect.",
+)
+@click.argument(
+    "bad",
+    required=False,
+)
+@click.argument(
+    "good",
+    nargs=-1,
+)
+def bisect_start(bad, good):
+    pass
+
+
+@click.command(
+    help="Automatically run git bisect using a script (given by FILENAME) which can tell if the current source code is good or bad",
+)
+@click.argument(
+    "filename",
+    type=click.Path(exists=True),
+)
+def bisect_run(filename):
+    pass
+
+
+@click.command(
+    help="Mark current revision as GOOD.",
+)
+@click.argument(
+    "revs",
+    nargs=-1,
+)
+def bisect_good(revs):
+    pass
+
+
+@click.command(
+    help="Mark current revision as BAD.",
+)
+@click.argument(
+    "revs",
+    nargs=-1,
+)
+def bisect_bad(revs):
+    pass
+
+
+@click.command(
+    help="Skip current revision. Try another one.",
+)
+def bisect_skip():
+    pass
+
+
 cli.add_command(ping)
 cli.add_command(build)
 cli.add_command(kernel_install)
 cli.add_command(reboot)
 cli.add_command(run)
+
+bisect.add_command(bisect_start)
+bisect.add_command(bisect_run)
+bisect.add_command(bisect_good)
+bisect.add_command(bisect_bad)
+bisect.add_command(bisect_skip)
+cli.add_command(bisect)
