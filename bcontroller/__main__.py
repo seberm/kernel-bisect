@@ -50,7 +50,9 @@ def cli(log):
 )
 @click.option(
     "--reboot/--no-reboot",
-    help="Tells if system will be rebooted after the kernel installation.",
+    " /-R",
+    default=True,
+    help="Tell if system will be rebooted after the kernel installation.",
 )
 def kernel_install(from_rpm, reboot):
     rpm_filename = os.path.basename(from_rpm)
