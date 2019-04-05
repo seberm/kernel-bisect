@@ -48,8 +48,16 @@ def cli(log):
     required=True,
     help="Path to RPM package to install on all DUTs.",
 )
-def kernel_install(from_rpm):
+@click.option(
+    "--reboot/--no-reboot",
+    help="Tells if system will be rebooted after the kernel installation.",
+)
+def kernel_install(from_rpm, reboot):
     rpm_filename = os.path.basename(from_rpm)
+
+    # TODO: propagade reboot into ansible playbook?
+    if reboot:
+        raise NotImplementedError
 
     run_command([
         "ansible-playbook",
