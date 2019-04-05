@@ -13,6 +13,7 @@
 * python >= 3.6
 * Click
 * ansible
+* git
 
 And everything ansible modules need, e.g.:
 * ipmi\_power: pyghmi
