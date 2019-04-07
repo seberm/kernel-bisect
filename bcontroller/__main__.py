@@ -81,6 +81,11 @@ def kernel_install(from_rpm, reboot):
     help="Path to the git working directory.",
 )
 @click.option(
+    "-m",
+    "--make-opts",
+    help="Append more options to MAKE command.",
+)
+@click.option(
     "-j",
     "--jobs",
     default=1,
@@ -92,21 +97,26 @@ def kernel_install(from_rpm, reboot):
     envvar="CC",
     help="Override current CC environment variable to specified value when compiling the kernel.",
 )
-def build(git_tree, jobs, cc):
+def build(git_tree, make_opts, jobs, cc):
     # Change OS environment only for the following command, not for whole
     # process
     modified_env = os.environ.copy()
     if cc:
         modified_env["CC"] = cc
 
+    build_cmd = [
+        "make",
+        "-C",
+        git_tree,
+        "-j",
+        str(jobs),
+    ]
+
+    if make_opts:
+        build_cmd.extend(make_opts.split(" "))
+
     run_command(
-        [
-            "make",
-            "-C",
-            git_tree,
-            "-j",
-            str(jobs),
-        ],
+        build_cmd,
         env=modified_env,
     )
 
