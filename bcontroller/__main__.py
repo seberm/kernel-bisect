@@ -33,7 +33,7 @@ def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
         case_sensitive=False),
     default=DEFAULT_LOGGING_MODE,
     show_default=True,
-    help="Set logging level",
+    help="Set logging level.",
 )
 @click.version_option(version=__version__)
 def cli(log):
