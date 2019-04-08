@@ -346,6 +346,20 @@ def bisect_skip(ctx, revs):
         ] + list(revs),
         work_dir=ctx.obj["git_tree"],
     )
+
+
+@click.command(
+    name="log",
+    help="Show bisect log.",
+)
+@click.pass_context
+def bisect_log(ctx):
+    git(
+        [
+            "bisect",
+            "log",
+        ],
+        work_dir=ctx.obj["git_tree"],
     )
 
 
@@ -360,4 +374,5 @@ bisect.add_command(bisect_run)
 bisect.add_command(bisect_good)
 bisect.add_command(bisect_bad)
 bisect.add_command(bisect_skip)
+bisect.add_command(bisect_log)
 cli.add_command(bisect)
