@@ -42,5 +42,6 @@ setup(
     ],
     install_requires=[
         "Click",
+        "ansible",
     ],
 )
