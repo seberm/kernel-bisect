@@ -26,9 +26,14 @@ def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
         sys.stdout.flush()
 
 
-def git(args):
-    args.insert(0, "git")
-    dry(run_command, args)
+def git(args, working_dir=os.getcwd()):
+    cmd_args = [
+        "git",
+        "-C",
+        working_dir,
+    ] + args
+
+    dry(run_command, cmd_args)
 
 
 def dry(fnc, *args, **kwargs):
@@ -103,7 +108,7 @@ def kernel_install(from_rpm, reboot):
 @click.option(
     "-C",
     "--git-tree",
-    default=_CUR_DIR,
+    default=os.getcwd(),
     show_default=True,
     type=click.Path(exists=True),
     help="Path to the git working directory.",
@@ -230,14 +235,17 @@ def run(filename):
 @click.option(
     "-C",
     "--git-tree",
-    default=_CUR_DIR,
+    default=os.getcwd(),
     show_default=True,
     type=click.Path(exists=True),
     help="Path to the git working directory.",
 )
-def bisect(git_tree):
-    pass
+@click.pass_context
+def bisect(ctx, git_tree):
+    if ctx.obj is None:
+        ctx.obj = {}
 
+    ctx.obj["git_tree"] = git_tree
 
 @click.command(
     name="start",
@@ -253,12 +261,16 @@ def bisect(git_tree):
     nargs=-1,
     required=False,
 )
-def bisect_start(bad, good):
-    git([
-        "bisect",
-        "start",
-        bad,
-    ] + list(good))
+@click.pass_context
+def bisect_start(ctx, bad, good):
+    git(
+        [
+            "bisect",
+            "start",
+            bad,
+        ] + list(good),
+        working_dir=ctx.obj["git_tree"],
+    )
 
 
 @click.command(
@@ -269,12 +281,12 @@ def bisect_start(bad, good):
     "filename",
     type=click.Path(exists=True),
 )
-def bisect_run(filename):
-    git([
-        "bisect",
-        "run",
-        filename,
-    ])
+@click.pass_context
+def bisect_run(ctx, filename):
+    raise NotImplementedError
+
+#    build(
+#build(git_tree, make_opts, jobs, cc):
 
 
 @click.command(
@@ -285,11 +297,15 @@ def bisect_run(filename):
     "revs",
     nargs=-1,
 )
-def bisect_good(revs):
-    git([
-        "bisect",
-        "good",
-    ] + list(revs))
+@click.pass_context
+def bisect_good(ctx, revs):
+    git(
+        [
+            "bisect",
+            "good",
+        ] + list(revs),
+        working_dir=ctx.obj["git_tree"],
+    )
 
 
 @click.command(
@@ -300,11 +316,15 @@ def bisect_good(revs):
     "revs",
     nargs=-1,
 )
-def bisect_bad(revs):
-    git([
-        "bisect",
-        "bad",
-    ] + list(revs))
+@click.pass_context
+def bisect_bad(ctx, revs):
+    git(
+        [
+            "bisect",
+            "bad",
+        ] + list(revs),
+        working_dir=ctx.obj["git_tree"],
+    )
 
 
 @click.command(
@@ -315,11 +335,15 @@ def bisect_bad(revs):
     "revs",
     nargs=-1,
 )
-def bisect_skip(revs):
-    git([
-        "bisect",
-        "skip",
-    ] + list(revs))
+@click.pass_context
+def bisect_skip(ctx, revs):
+    git(
+        [
+            "bisect",
+            "skip",
+        ] + list(revs),
+        working_dir=ctx.obj["git_tree"],
+    )
 
 
 cli.add_command(ping)
