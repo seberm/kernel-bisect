@@ -25,6 +25,12 @@ def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
         sys.stdout.buffer.write(c)
         sys.stdout.flush()
 
+
+def git(args):
+    args.insert(0, "git")
+    dry(run_command, args)
+
+
 def dry(fnc, *args, **kwargs):
     if _DRY_RUN_ACTIVE:
         warning("DRY-RUN: not calling: %s(%s, %s)", fnc.__name__, args, kwargs)
