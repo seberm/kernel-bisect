@@ -270,7 +270,11 @@ def bisect_start(bad, good):
     type=click.Path(exists=True),
 )
 def bisect_run(filename):
-    pass
+    git([
+        "bisect",
+        "run",
+        filename,
+    ])
 
 
 @click.command(
@@ -282,7 +286,10 @@ def bisect_run(filename):
     nargs=-1,
 )
 def bisect_good(revs):
-    pass
+    git([
+        "bisect",
+        "good",
+    ] + list(revs))
 
 
 @click.command(
@@ -294,15 +301,25 @@ def bisect_good(revs):
     nargs=-1,
 )
 def bisect_bad(revs):
-    pass
+    git([
+        "bisect",
+        "bad",
+    ] + list(revs))
 
 
 @click.command(
     name="skip",
     help="Skip current revision. Try another one.",
 )
-def bisect_skip():
-    pass
+@click.argument(
+    "revs",
+    nargs=-1,
+)
+def bisect_skip(revs):
+    git([
+        "bisect",
+        "skip",
+    ] + list(revs))
 
 
 cli.add_command(ping)
