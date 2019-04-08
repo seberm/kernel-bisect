@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 import subprocess
-from logging import debug, warning
+from logging import debug, warning, info
 
 import click
 
@@ -245,7 +245,9 @@ def bisect(ctx, git_tree):
     if ctx.obj is None:
         ctx.obj = {}
 
+    info("Current git working directory: %s", git_tree)
     ctx.obj["git_tree"] = git_tree
+
 
 @click.command(
     name="start",
