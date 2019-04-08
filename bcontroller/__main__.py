@@ -234,6 +234,28 @@ def ping():
 
 
 @click.command(
+    help="Run specified command on all DUTs.",
+)
+@click.argument(
+    "command",
+    required=True,
+)
+@click.argument(
+    "args",
+    nargs=-1,
+)
+def sh(command, args):
+    dry(run_command, [
+        "ansible",
+        "-m",
+        "command",
+        "-a",
+        "%s %s" % (command, " ".join(args)),
+        "duts",
+    ])
+
+
+@click.command(
     help="Copy and run file specified by FILENAME on DUTs. Print stdout and stderr onto standard outputs. This program exit code will be the same as the remote process exit code.",
 )
 @click.argument(
@@ -391,6 +413,7 @@ cli.add_command(kernel_install)
 cli.add_command(uname)
 cli.add_command(reboot)
 cli.add_command(run)
+cli.add_command(sh)
 
 bisect.add_command(bisect_start)
 bisect.add_command(bisect_run)
