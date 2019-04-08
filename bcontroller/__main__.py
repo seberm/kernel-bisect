@@ -88,6 +88,11 @@ def cli(log, dry_run):
     help="Tell if system will be rebooted after the kernel installation.",
 )
 def kernel_install(from_rpm, reboot):
+    """
+    Install given kernel to the target system(s) and try to boot into it. This
+    command *does not* check if system(s) successfully booted into the given
+    kernel.
+    """
     rpm_filename = os.path.basename(from_rpm)
 
     if not reboot:
