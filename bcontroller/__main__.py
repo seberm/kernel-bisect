@@ -26,11 +26,11 @@ def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
         sys.stdout.flush()
 
 
-def git(args, working_dir=os.getcwd()):
+def git(args, work_dir=os.getcwd()):
     cmd_args = [
         "git",
         "-C",
-        working_dir,
+        work_dir,
     ] + args
 
     dry(run_command, cmd_args)
@@ -269,7 +269,7 @@ def bisect_start(ctx, bad, good):
             "start",
             bad,
         ] + list(good),
-        working_dir=ctx.obj["git_tree"],
+        work_dir=ctx.obj["git_tree"],
     )
 
 
@@ -304,7 +304,7 @@ def bisect_good(ctx, revs):
             "bisect",
             "good",
         ] + list(revs),
-        working_dir=ctx.obj["git_tree"],
+        work_dir=ctx.obj["git_tree"],
     )
 
 
@@ -323,7 +323,7 @@ def bisect_bad(ctx, revs):
             "bisect",
             "bad",
         ] + list(revs),
-        working_dir=ctx.obj["git_tree"],
+        work_dir=ctx.obj["git_tree"],
     )
 
 
@@ -342,7 +342,8 @@ def bisect_skip(ctx, revs):
             "bisect",
             "skip",
         ] + list(revs),
-        working_dir=ctx.obj["git_tree"],
+        work_dir=ctx.obj["git_tree"],
+    )
     )
 
 
