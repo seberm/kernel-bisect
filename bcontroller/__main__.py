@@ -39,7 +39,6 @@ def dry(fnc, *args, **kwargs):
     fnc(*args, **kwargs)
 
 
-
 @click.group()
 @click.option(
     "-l",
@@ -246,14 +245,20 @@ def bisect(git_tree):
 )
 @click.argument(
     "bad",
+    default="",
     required=False,
 )
 @click.argument(
     "good",
     nargs=-1,
+    required=False,
 )
 def bisect_start(bad, good):
-    pass
+    git([
+        "bisect",
+        "start",
+        bad,
+    ] + list(good))
 
 
 @click.command(
