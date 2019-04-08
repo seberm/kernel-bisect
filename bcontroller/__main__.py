@@ -15,6 +15,8 @@ PROGRAM_EPILOG = ""
 
 _CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 
+_DRY_RUN_ACTIVE = False
+
 
 def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
     debug("Running CMD: %s", args)
@@ -22,6 +24,14 @@ def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
     for c in iter(lambda: process.stdout.read(1), b''):
         sys.stdout.buffer.write(c)
         sys.stdout.flush()
+
+def dry(fnc, *args, **kwargs):
+    if _DRY_RUN_ACTIVE:
+        warning("DRY-RUN: not calling: %s(%s, %s)", fnc.__name__, args, kwargs)
+        return
+
+    fnc(*args, **kwargs)
+
 
 
 @click.group()
@@ -36,8 +46,21 @@ def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
     help="Set logging level.",
 )
 @click.version_option(version=__version__)
-def cli(log):
+@click.option(
+    "-n",
+    "--dry-run",
+    default=False,
+    is_flag=True,
+    help="Do not launch any action, just print it out.",
+)
+def cli(log, dry_run):
     logging.basicConfig(level=log.upper())
+
+    global _DRY_RUN_ACTIVE
+    _DRY_RUN_ACTIVE = dry_run
+
+    if _DRY_RUN_ACTIVE:
+        warning("DRY-RUN mode active!")
 
 
 @click.command(
@@ -60,7 +83,7 @@ def kernel_install(from_rpm, reboot):
     if not reboot:
         warning("kernel-install: not rebooting the kernel, option -R/--no-reboot is active.")
 
-    run_command([
+    dry(run_command, [
         "ansible-playbook",
         "--limit",
         "duts",
@@ -115,10 +138,7 @@ def build(git_tree, make_opts, jobs, cc):
     if make_opts:
         build_cmd.extend(make_opts.split(" "))
 
-    run_command(
-        build_cmd,
-        env=modified_env,
-    )
+    dry(run_command, build_cmd, env=modified_env)
 
 
 @click.command(
@@ -149,7 +169,7 @@ def reboot(use):
         mgmt_host = ""  # TODO
         mgmt_user = "ADMIN"
         mgmt_password = "ADMIN"
-        run_command([
+        dry(run_command, [
             "ansible",
             "-m",
             "ipmi_power",
@@ -160,7 +180,7 @@ def reboot(use):
             "mgmt"
         ])
     else:
-        run_command([
+        dry(run_command, [
             "ansible",
             "-m",
             "reboot",
@@ -173,7 +193,7 @@ def reboot(use):
     help="Test connection to DUTs.",
 )
 def ping():
-    run_command([
+    dry(run_command, [
         "ansible-playbook",
         "--limit",
         "duts",
@@ -190,7 +210,7 @@ def ping():
 )
 def run(filename):
     abs_path_filename = os.path.abspath(filename)
-    run_command([
+    dry(run_command, [
         "ansible-playbook",
         "--limit",
         "duts",
