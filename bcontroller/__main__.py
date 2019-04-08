@@ -103,6 +103,28 @@ def kernel_install(from_rpm, reboot):
 
 
 @click.command(
+    help="Return current kernel information. If you want to provide arguments for uname, just separate them with double commans (e.g. $ %(prog)s uname -- --all)."
+)
+@click.argument(
+    "args",
+    nargs=-1,
+    # TODO: --all shoud be default for this option!
+    #default=["--all"],
+)
+def uname(args):
+        dry(run_command, [
+            "ansible",
+            "-m",
+            "command",
+            "-a",
+            "uname %s" % " ".join(args),
+
+            # Limit hosts
+            "duts"
+        ])
+
+
+@click.command(
     help="Build kernel inside its working directory",
 )
 @click.option(
@@ -366,6 +388,7 @@ def bisect_log(ctx):
 cli.add_command(ping)
 cli.add_command(build)
 cli.add_command(kernel_install)
+cli.add_command(uname)
 cli.add_command(reboot)
 cli.add_command(run)
 
