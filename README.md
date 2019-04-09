@@ -1,5 +1,50 @@
 # Kernel Git Bisect automation
 
+
+## Installation
+
+### Installation of dependencies
+
+#### Fedora
+```
+sudo dnf install python3-click ansible git
+```
+
+#### pip
+```
+$ pip install -r requirements.txt
+$ python setup.py install
+```
+
+### Clone this project
+```
+$ git clone https://gitlab.com/seberm/kernel-bisect.git
+$ cd kernel-bisect
+```
+
+Create ansible inventory
+```
+$ cat > remotes.txt <<EOF
+[all:vars]
+ansible_connection=ssh
+ansible_user=root
+ansible_ssh_pass=toor
+
+[duts]
+host1.example.com
+host2.example.com
+
+[duts-mgmt]
+host1-mgmt.example.com
+host2-mgmt.example.com
+EOF
+```
+
+Try to run:
+```
+$ bcontrol.py --version
+```
+
 ## Basic usage
 Check connection and dependencies:
 ```
