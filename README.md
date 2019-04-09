@@ -16,7 +16,8 @@ $ pip install -r requirements.txt
 $ python setup.py install
 ```
 
-### Clone this project
+### Run this project
+Clone project
 ```
 $ git clone https://gitlab.com/seberm/kernel-bisect.git
 $ cd kernel-bisect
@@ -113,5 +114,5 @@ And everything ansible modules need, e.g.:
 * Integrate bcontrol into global/local git config.
 
 ## Authors
-* Otto Sabart
+* Otto Sabart <seberm@seberm.com>
 
