@@ -112,6 +112,9 @@ And everything ansible modules need, e.g.:
 ## TODOs
 * When logging mode is set to debug, run all ansible commands with -vvv option.
 * Integrate bcontrol into global/local git config.
+* GitHub will be mirror
+* Create wrapper for git-bisect run to have possibility to run bisect from git directly
+* Also support wrapper around git-bisect, to have possibility to run git-bisect run from bcontrol
 
 ## Authors
 * Otto Sabart <seberm@seberm.com>
