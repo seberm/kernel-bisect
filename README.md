@@ -1,5 +1,46 @@
 # Kernel Git Bisect automation
 
+## Basic usage
+Check connection and dependencies:
+```
+$ bcontrol.py ping
+```
+
+Bcontrol tool supports the dry-run:
+```
+$ bcontrol.py --dry-run ping
+```
+
+Basic information about kernel on all DUTs:
+```
+$ bcontrol.py uname -- --all
+```
+
+Run specified command on all DUTs:
+```
+$ bcontrol.py sh ls -- -alh
+```
+
+Reboot all DUTs machines:
+```
+$ bcontrol.py reboot
+```
+
+Run script.sh in all DUTs and return the output:
+```
+$ bcontrol.py run script.sh
+```
+
+Build kernel and genrate binary RPM package:
+```
+$ bcontrol.py build --jobs 4 -C ~/repos/linux-torvalds-repository
+```
+
+Try to install specified kernel on all DUTs and reboot into it:
+```
+$ bcontrol.py kernel-install --from-rpm /tmp/rpmbuild-kernel-bisect/RPMS/x86_64/kernel-5.1.0_rc3+-5.x86_64.rpm
+```
+
 ## Support
 
 ### Supported distros
