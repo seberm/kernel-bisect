@@ -54,7 +54,8 @@ def dry(fnc, *args, **kwargs):
     "--log",
     type=click.Choice(
         ["DEBUG", "WARNING", "INFO", "ERROR", "EXCEPTION"],
-        case_sensitive=False),
+        case_sensitive=False,
+    ),
     default=DEFAULT_LOGGING_MODE,
     show_default=True,
     help="Set logging level.",
@@ -184,7 +185,7 @@ def build(ctx, git_tree, make_opts, jobs, cc, rpmbuild_topdir):
         "-j",
         str(jobs),
 
-        # Target
+        # Makefile target
         "binrpm-pkg",
 
         # Build packages in well-known directory
