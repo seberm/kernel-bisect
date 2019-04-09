@@ -1,5 +1,6 @@
 import logging
 import os
+import tempfile
 import sys
 import subprocess
 from logging import debug, warning, info
@@ -157,7 +158,13 @@ def uname(args):
     envvar="CC",
     help="Override current CC environment variable to specified value when compiling the kernel.",
 )
-def build(git_tree, make_opts, jobs, cc):
+@click.option(
+    "--rpmbuild-topdir",
+    default=os.path.join(tempfile.gettempdir(), "rpmbuild-kernel-bisect"),
+    show_default=True,
+    help="Sets the rpmbuild _topdir variable. It is a place where rpmbuild create all RPM related files (spec file, SRPM, sources, etc.).",
+)
+def build(git_tree, make_opts, jobs, cc, rpmbuild_topdir):
     # Change OS environment only for the following command, not for whole
     # process
     modified_env = os.environ.copy()
@@ -170,6 +177,12 @@ def build(git_tree, make_opts, jobs, cc):
         git_tree,
         "-j",
         str(jobs),
+
+        # Target
+        "binrpm-pkg",
+
+        # Build packages in well-known directory
+        f'RPMOPTS=--define \"_topdir {rpmbuild_topdir}\"',
     ]
 
     if make_opts:
