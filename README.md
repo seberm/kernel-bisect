@@ -115,6 +115,7 @@ And everything ansible modules need, e.g.:
 * GitHub will be mirror
 * Create wrapper for git-bisect run to have possibility to run bisect from git directly
 * Also support wrapper around git-bisect, to have possibility to run git-bisect run from bcontrol
+* Use terminalizer to record usage GIF
 
 ## Authors
 * Otto Sabart <seberm@seberm.com>
