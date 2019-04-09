@@ -227,7 +227,7 @@ def reboot(use):
             f"state=reset name={mgmt_host} user={mgmt_user} password={mgmt_password}",
 
             # Limit hosts
-            "mgmt"
+            "duts-mgmt"
         ])
     else:
         dry(run_command, [
