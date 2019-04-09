@@ -9,6 +9,7 @@ import click
 
 
 DEFAULT_LOGGING_MODE = "DEBUG"
+DEFAULT_RPMBUILD_TOPDIR = os.path.join(tempfile.gettempdir(), "rpmbuild-kernel-bisect")
 __version__ = "v0.0.1"
 
 PROGRAM_DESCRIPTION = """Some desc.\n"""
@@ -160,11 +161,14 @@ def uname(args):
 )
 @click.option(
     "--rpmbuild-topdir",
-    default=os.path.join(tempfile.gettempdir(), "rpmbuild-kernel-bisect"),
+    default=DEFAULT_RPMBUILD_TOPDIR,
     show_default=True,
     help="Sets the rpmbuild _topdir variable. It is a place where rpmbuild create all RPM related files (spec file, SRPM, sources, etc.).",
 )
-def build(git_tree, make_opts, jobs, cc, rpmbuild_topdir):
+@click.pass_context
+def build(ctx, git_tree, make_opts, jobs, cc, rpmbuild_topdir):
+    ctx.obj["rpmbuild_topdir"] = rpmbuild_topdir
+
     # Change OS environment only for the following command, not for whole
     # process
     modified_env = os.environ.copy()
