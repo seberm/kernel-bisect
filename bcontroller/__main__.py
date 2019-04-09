@@ -27,6 +27,8 @@ def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
         sys.stdout.buffer.write(c)
         sys.stdout.flush()
 
+    return process
+
 
 def git(args, work_dir=os.getcwd()):
     cmd_args = [
@@ -43,7 +45,7 @@ def dry(fnc, *args, **kwargs):
         warning("DRY-RUN: not calling: %s(%s, %s)", fnc.__name__, args, kwargs)
         return
 
-    fnc(*args, **kwargs)
+    return fnc(*args, **kwargs)
 
 
 @click.group()
