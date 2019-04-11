@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import tempfile
 import re
 from logging import warning, info
@@ -378,7 +379,7 @@ def bisect_from_git(ctx, filename):
 
     p_out, p_build = bcontroller.build(git_tree, make_opts=[], jobs=4, cc="", rpmbuild_topdir=DEFAULT_RPMBUILD_TOPDIR)
     if p_build.returncode != 0:
-        return _BISECT_RET_SKIP
+        sys.exit(_BISECT_RET_SKIP)
 
     # Grep this from make output and use this rpm path for package installation
     # Wrote: /tmp/bisect-my/RPMS/i386/kernel-5.1.0_rc3+-5.i386.rpm
@@ -387,7 +388,7 @@ def bisect_from_git(ctx, filename):
     # TODO: we must also check output and returncodes of ansible
     _, p_ans = bcontroller.kernel_install(from_rpm=rpms[0], reboot=True)
     if p_ans.returncode != 0:
-        return _BISECT_RET_ABORT
+        sys.exit(_BISECT_RET_ABORT)
 
     #uname_out = uname(["-r"])
     #json.loads(p_out)
