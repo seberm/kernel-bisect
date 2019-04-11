@@ -2,6 +2,7 @@ import sys
 import subprocess
 import os
 import re
+import json
 from logging import debug, info, warning
 
 
@@ -224,15 +225,27 @@ def bisect_from_git(git_tree, filename, rpmbuild_topdir):
     # Wrote: /tmp/bisect-my/RPMS/i386/kernel-5.1.0_rc3+-5.i386.rpm
     rpms = re.findall(r"^Wrote:\s+(?P<pkg_path>.*(?<!\.rpm)\.rpm)$", p_out, re.MULTILINE)
 
+    m_groups = re.match(r"^kernel-(?P<kernel_version>.*(?<!\.rpm))\.rpm$", os.path.basename(rpms[0]))
+    built_kernel_version = m_groups.group("kernel_version")
+
     # TODO: we must also check output and returncodes of ansible
     _, p_ans = kernel_install(from_rpm=rpms[0], reboot=True)
     if p_ans.returncode != 0:
         return _BISECT_RET_ABORT
 
-    #uname_out = uname(["-r"])
-    #json.loads(p_out)
-    #check_booted_kernel using uname
-    # -> same as old one? -> bisect_skip
-    # -> booted into new one? -> continuing
-    # exit_state = run(filename=filename)
-    # -> propagate exit state into git-bisect
+    # Check if the booted kernel matches the built kernel
+    uname_ans_out, p_uname = sh("uname", ["-r"])
+    if p_uname.returncode != 0:
+        return _BISECT_RET_ABORT
+
+    uname_ans_d = json.loads(uname_ans_out)
+    duts = uname_ans_d["plays"]["play"]["tasks"][0]["hosts"]
+
+    for host, val in duts.items():
+        uname_kernel_ver = val["stdout"]
+        if built_kernel_version != uname_kernel_ver:
+            # Kernel did not boot correctly - panic?
+            return _BISECT_RET_SKIP
+
+    _, p_run = run(filename)
+    return p_run.returncode
