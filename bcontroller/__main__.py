@@ -7,9 +7,6 @@ from logging import warning, info
 
 import click
 
-# TODO: Ansible output parser...
-# TODO: propagate exit state of remote script to git-bisect run sh -c "exit N"
-
 from bcontroller import __version__
 import bcontroller
 
@@ -397,7 +394,6 @@ def bisect_from_git(ctx, filename):
     # -> booted into new one? -> continuing
     # exit_state = run(filename=filename)
     # -> propagate exit state into git-bisect
-
 
 
 cli.add_command(ping)
