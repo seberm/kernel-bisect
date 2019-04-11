@@ -1,6 +1,7 @@
 import sys
 import subprocess
 import os
+import re
 from logging import debug, info, warning
 
 
@@ -11,6 +12,15 @@ __version__ = "v0.0.1"
 
 _DRY_RUN_ACTIVE = False
 _CUR_DIR = os.path.dirname(os.path.realpath(__file__))
+
+# 0 -> good
+# 1 <= N <= 127 (except 125) -> bad
+# 127> -> aborts bisect
+# 125 -> skip
+_BISECT_RET_GOOD = 0
+_BISECT_RET_BAD = 1
+_BISECT_RET_SKIP = 125
+_BISECT_RET_ABORT = 128
 
 
 class BControlError(Exception):
@@ -148,3 +158,81 @@ def run(filename):
         os.path.join(_CUR_DIR, "../playbooks/run.yml"),
         f"-e filename={abs_path_filename}",
     ])
+
+
+def bisect_start(git_tree, bad, good):
+    return git(
+        [
+            "bisect",
+            "start",
+            bad,
+        ] + list(good),
+        work_dir=git_tree,
+    )
+
+
+def bisect_good(git_tree, revs):
+    return git(
+        [
+            "bisect",
+            "good",
+        ] + list(revs),
+        work_dir=git_tree,
+    )
+
+
+def bisect_bad(git_tree, revs):
+    return git(
+        [
+            "bisect",
+            "bad",
+        ] + list(revs),
+        work_dir=git_tree,
+    )
+
+
+def bisect_skip(git_tree, revs):
+    return git(
+        [
+            "bisect",
+            "skip",
+        ] + list(revs),
+        work_dir=git_tree,
+    )
+
+
+def bisect_log(git_tree):
+    return git(
+        [
+            "bisect",
+            "log",
+        ],
+        work_dir=git_tree,
+    )
+
+
+def bisect_from_git(git_tree, filename, rpmbuild_topdir):
+    """
+    Kernel bisect algorithm.
+    """
+
+    p_out, p_build = build(git_tree, make_opts=[], jobs=4, cc="", rpmbuild_topdir=rpmbuild_topdir)
+    if p_build.returncode != 0:
+        return _BISECT_RET_SKIP
+
+    # Grep this from make output and use this rpm path for package installation
+    # Wrote: /tmp/bisect-my/RPMS/i386/kernel-5.1.0_rc3+-5.i386.rpm
+    rpms = re.findall(r"^Wrote:\s+(?P<pkg_path>.*(?<!\.rpm)\.rpm)$", p_out, re.MULTILINE)
+
+    # TODO: we must also check output and returncodes of ansible
+    _, p_ans = kernel_install(from_rpm=rpms[0], reboot=True)
+    if p_ans.returncode != 0:
+        return _BISECT_RET_ABORT
+
+    #uname_out = uname(["-r"])
+    #json.loads(p_out)
+    #check_booted_kernel using uname
+    # -> same as old one? -> bisect_skip
+    # -> booted into new one? -> continuing
+    # exit_state = run(filename=filename)
+    # -> propagate exit state into git-bisect

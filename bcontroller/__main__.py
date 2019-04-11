@@ -2,7 +2,6 @@ import logging
 import os
 import sys
 import tempfile
-import re
 from logging import warning, info
 
 import click
@@ -21,15 +20,6 @@ PROGRAM_DESCRIPTION = "Some text."
 PROGRAM_EPILOG = ""
 
 _CUR_DIR = os.path.dirname(os.path.realpath(__file__))
-
-# 0 -> good
-# 1 <= N <= 127 (except 125) -> bad
-# 127> -> aborts bisect
-# 125 -> skip
-_BISECT_RET_GOOD = 0
-_BISECT_RET_BAD = 1
-_BISECT_RET_SKIP = 125
-_BISECT_RET_ABORT = 128
 
 
 def dry(fnc, *args, **kwargs):
@@ -249,15 +239,7 @@ def bisect(ctx, git_tree):
 )
 @click.pass_context
 def bisect_start(ctx, bad, good):
-    raise NotImplementedError
-#    git(
-#        [
-#            "bisect",
-#            "start",
-#            bad,
-#        ] + list(good),
-#        work_dir=ctx.obj["git_tree"],
-#    )
+    dry(bcontroller.bisect_start, ctx.obj["git_tree"], bad, good)
 
 
 @click.command(
@@ -292,14 +274,7 @@ def bisect_run(ctx, filename):
 )
 @click.pass_context
 def bisect_good(ctx, revs):
-    raise NotImplementedError
-    #git(
-    #    [
-    #        "bisect",
-    #        "good",
-    #    ] + list(revs),
-    #    work_dir=ctx.obj["git_tree"],
-    #)
+    dry(bcontroller.bisect_good, ctx.obj["git_tree"], revs)
 
 
 @click.command(
@@ -312,14 +287,7 @@ def bisect_good(ctx, revs):
 )
 @click.pass_context
 def bisect_bad(ctx, revs):
-    raise NotImplementedError
-    #git(
-    #    [
-    #        "bisect",
-    #        "bad",
-    #    ] + list(revs),
-    #    work_dir=ctx.obj["git_tree"],
-    #)
+    dry(bcontroller.bisect_bad, ctx.obj["git_tree"], revs)
 
 
 @click.command(
@@ -332,14 +300,7 @@ def bisect_bad(ctx, revs):
 )
 @click.pass_context
 def bisect_skip(ctx, revs):
-    raise NotImplementedError
-    #git(
-    #    [
-    #        "bisect",
-    #        "skip",
-    #    ] + list(revs),
-    #    work_dir=ctx.obj["git_tree"],
-    #)
+    dry(bcontroller.bisect_skip, ctx.obj["git_tree"], revs)
 
 
 @click.command(
@@ -348,14 +309,7 @@ def bisect_skip(ctx, revs):
 )
 @click.pass_context
 def bisect_log(ctx):
-    raise NotImplementedError
-    #git(
-    #    [
-    #        "bisect",
-    #        "log",
-    #    ],
-    #    work_dir=ctx.obj["git_tree"],
-    #)
+    dry(bcontroller.bisect_log, ctx.obj["git_tree"])
 
 
 @click.command(
@@ -371,29 +325,8 @@ def bisect_from_git(ctx, filename):
     """
     Kernel bisect algorithm.
     """
-
     git_tree = ctx.obj["git_tree"]
-
-    p_out, p_build = bcontroller.build(git_tree, make_opts=[], jobs=4, cc="", rpmbuild_topdir=DEFAULT_RPMBUILD_TOPDIR)
-    if p_build.returncode != 0:
-        sys.exit(_BISECT_RET_SKIP)
-
-    # Grep this from make output and use this rpm path for package installation
-    # Wrote: /tmp/bisect-my/RPMS/i386/kernel-5.1.0_rc3+-5.i386.rpm
-    rpms = re.findall(r"^Wrote:\s+(?P<pkg_path>.*(?<!\.rpm)\.rpm)$", p_out, re.MULTILINE)
-
-    # TODO: we must also check output and returncodes of ansible
-    _, p_ans = bcontroller.kernel_install(from_rpm=rpms[0], reboot=True)
-    if p_ans.returncode != 0:
-        sys.exit(_BISECT_RET_ABORT)
-
-    #uname_out = uname(["-r"])
-    #json.loads(p_out)
-    #check_booted_kernel using uname
-    # -> same as old one? -> bisect_skip
-    # -> booted into new one? -> continuing
-    # exit_state = run(filename=filename)
-    # -> propagate exit state into git-bisect
+    sys.exit(bcontroller.bisect_from_git(git_tree, filename))
 
 
 cli.add_command(ping)
@@ -404,11 +337,11 @@ cli.add_command(reboot)
 cli.add_command(run)
 cli.add_command(sh)
 
-#bisect.add_command(bisect_start)
-#bisect.add_command(bisect_run)
-#bisect.add_command(bisect_good)
-#bisect.add_command(bisect_bad)
-#bisect.add_command(bisect_skip)
-#bisect.add_command(bisect_log)
+bisect.add_command(bisect_start)
+bisect.add_command(bisect_run)
+bisect.add_command(bisect_good)
+bisect.add_command(bisect_bad)
+bisect.add_command(bisect_skip)
+bisect.add_command(bisect_log)
 bisect.add_command(bisect_from_git)
 cli.add_command(bisect)
