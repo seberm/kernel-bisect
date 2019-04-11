@@ -12,10 +12,14 @@ import click
 from bcontroller import __version__
 import bcontroller
 
-DEFAULT_LOGGING_MODE = "DEBUG"
-DEFAULT_RPMBUILD_TOPDIR = os.path.join(tempfile.gettempdir(), "rpmbuild-kernel-bisect")
 
-PROGRAM_DESCRIPTION = """Some desc.\n"""
+DEFAULT_LOGGING_MODE = "DEBUG"
+DEFAULT_RPMBUILD_TOPDIR = os.path.join(
+    tempfile.gettempdir(),
+    "rpmbuild-kernel-bisect",
+)
+
+PROGRAM_DESCRIPTION = "Some text."
 PROGRAM_EPILOG = ""
 
 _CUR_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -60,6 +64,9 @@ def dry(fnc, *args, **kwargs):
 )
 @click.pass_context
 def cli(ctx, log, dry_run):
+    """
+    Script for automatic kernel bisection.
+    """
     if ctx.obj is None:
         ctx.obj = {}
 
