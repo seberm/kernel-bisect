@@ -87,6 +87,20 @@ Try to install specified kernel on all DUTs and reboot into it:
 $ bcontrol.py kernel-install --from-rpm /tmp/rpmbuild-kernel-bisect/RPMS/x86_64/kernel-5.1.0_rc3+-5.x86_64.rpm
 ```
 
+## How to use bcontrol with git-bisect
+
+Usage from git-bisect:
+```
+$ cd ~/repos/kernel-tree
+$ git bisect run bcontrol bisect from-git test-script.sh
+```
+
+Possibility to run git-bisect using bcontrol (git-bisect runs as a subprocess):
+```
+$ cd kernel-tree
+$ bcontrol bisect -C ~/repos/kernel-tree run test-script.sh
+```
+
 ## Support
 
 ### Supported distros
