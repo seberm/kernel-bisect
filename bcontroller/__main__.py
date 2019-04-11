@@ -1,43 +1,33 @@
 import logging
 import os
 import tempfile
-import sys
-import subprocess
-from logging import debug, warning, info
+import re
+from logging import warning, info
 
 import click
 
+# TODO: Ansible output parser...
+# TODO: propagate exit state of remote script to git-bisect run sh -c "exit N"
+
+from bcontroller import __version__
+import bcontroller
 
 DEFAULT_LOGGING_MODE = "DEBUG"
 DEFAULT_RPMBUILD_TOPDIR = os.path.join(tempfile.gettempdir(), "rpmbuild-kernel-bisect")
-__version__ = "v0.0.1"
 
 PROGRAM_DESCRIPTION = """Some desc.\n"""
 PROGRAM_EPILOG = ""
 
 _CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 
-_DRY_RUN_ACTIVE = False
-
-
-def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
-    debug("Running CMD: %s", args)
-    process = subprocess.Popen(args, stdout=stdout, stderr=stderr, env=env)
-    for c in iter(lambda: process.stdout.read(1), b''):
-        sys.stdout.buffer.write(c)
-        sys.stdout.flush()
-
-    return process
-
-
-def git(args, work_dir=os.getcwd()):
-    cmd_args = [
-        "git",
-        "-C",
-        work_dir,
-    ] + args
-
-    dry(run_command, cmd_args)
+# 0 -> good
+# 1 <= N <= 127 (except 125) -> bad
+# 127> -> aborts bisect
+# 125 -> skip
+_BISECT_RET_GOOD = 0
+_BISECT_RET_BAD = 1
+_BISECT_RET_SKIP = 125
+_BISECT_RET_ABORT = 128
 
 
 def dry(fnc, *args, **kwargs):
@@ -68,7 +58,11 @@ def dry(fnc, *args, **kwargs):
     is_flag=True,
     help="Do not launch any action, just print it out.",
 )
-def cli(log, dry_run):
+@click.pass_context
+def cli(ctx, log, dry_run):
+    if ctx.obj is None:
+        ctx.obj = {}
+
     logging.basicConfig(level=log.upper())
 
     global _DRY_RUN_ACTIVE
@@ -93,23 +87,7 @@ def cli(log, dry_run):
     help="Tell if system will be rebooted after the kernel installation.",
 )
 def kernel_install(from_rpm, reboot):
-    """
-    Install given kernel to the target system(s) and try to boot into it. This
-    command *does not* check if system(s) successfully booted into the given
-    kernel.
-    """
-    rpm_filename = os.path.basename(from_rpm)
-
-    if not reboot:
-        warning("kernel-install: not rebooting the kernel, option -R/--no-reboot is active.")
-
-    dry(run_command, [
-        "ansible-playbook",
-        "--limit",
-        "duts",
-        os.path.join(_CUR_DIR, "../playbooks/install-kernel.yml"),
-        f"-e kernel_pkg_path={from_rpm} kernel_pkg={rpm_filename} reboot={reboot}",
-    ])
+    dry(bcontroller.kernel_install, from_rpm, reboot)
 
 
 @click.command(
@@ -122,16 +100,7 @@ def kernel_install(from_rpm, reboot):
     #default=["--all"],
 )
 def uname(args):
-        dry(run_command, [
-            "ansible",
-            "-m",
-            "command",
-            "-a",
-            "uname %s" % " ".join(args),
-
-            # Limit hosts
-            "duts"
-        ])
+    bcontroller.sh("uname", args)
 
 
 @click.command(
@@ -168,34 +137,8 @@ def uname(args):
     show_default=True,
     help="Sets the rpmbuild _topdir variable. It is a place where rpmbuild create all RPM related files (spec file, SRPM, sources, etc.).",
 )
-@click.pass_context
-def build(ctx, git_tree, make_opts, jobs, cc, rpmbuild_topdir):
-    ctx.obj["rpmbuild_topdir"] = rpmbuild_topdir
-
-    # Change OS environment only for the following command, not for whole
-    # process
-    modified_env = os.environ.copy()
-    if cc:
-        modified_env["CC"] = cc
-
-    build_cmd = [
-        "make",
-        "-C",
-        git_tree,
-        "-j",
-        str(jobs),
-
-        # Makefile target
-        "binrpm-pkg",
-
-        # Build packages in well-known directory
-        f'RPMOPTS=--define \"_topdir {rpmbuild_topdir}\"',
-    ]
-
-    if make_opts:
-        build_cmd.extend(make_opts.split(" "))
-
-    dry(run_command, build_cmd, env=modified_env)
+def build(git_tree, make_opts, jobs, cc, rpmbuild_topdir):
+    dry(bcontroller.build, git_tree, make_opts, jobs, cc, rpmbuild_topdir)
 
 
 @click.command(
@@ -220,42 +163,15 @@ def build(ctx, git_tree, make_opts, jobs, cc, rpmbuild_topdir):
     help="Tells which way reboot the machine."
 )
 def reboot(use):
-    # TODO: add support various methods of reboot
-
-    if use == "ipmi":
-        mgmt_host = ""  # TODO
-        mgmt_user = "ADMIN"
-        mgmt_password = "ADMIN"
-        dry(run_command, [
-            "ansible",
-            "-m",
-            "ipmi_power",
-            "-a",
-            f"state=reset name={mgmt_host} user={mgmt_user} password={mgmt_password}",
-
-            # Limit hosts
-            "duts-mgmt"
-        ])
-    else:
-        dry(run_command, [
-            "ansible",
-            "-m",
-            "reboot",
-            "-a"
-            "reboot_timeout=0",
-        ])
+    dry(bcontroller.reboot, use)
 
 
 @click.command(
     help="Test connection to DUTs.",
 )
 def ping():
-    dry(run_command, [
-        "ansible-playbook",
-        "--limit",
-        "duts",
-        os.path.join(_CUR_DIR, "../playbooks/test.yml"),
-    ])
+    dry(bcontroller.ping)
+
 
 
 @click.command(
@@ -270,14 +186,7 @@ def ping():
     nargs=-1,
 )
 def sh(command, args):
-    dry(run_command, [
-        "ansible",
-        "-m",
-        "command",
-        "-a",
-        "%s %s" % (command, " ".join(args)),
-        "duts",
-    ])
+    dry(bcontroller.sh, command, args)
 
 
 @click.command(
@@ -288,14 +197,7 @@ def sh(command, args):
     type=click.Path(exists=True),
 )
 def run(filename):
-    abs_path_filename = os.path.abspath(filename)
-    dry(run_command, [
-        "ansible-playbook",
-        "--limit",
-        "duts",
-        os.path.join(_CUR_DIR, "../playbooks/run.yml"),
-        f"-e filename={abs_path_filename}",
-    ])
+    dry(run, filename)
 
 
 @click.group(
@@ -334,14 +236,15 @@ def bisect(ctx, git_tree):
 )
 @click.pass_context
 def bisect_start(ctx, bad, good):
-    git(
-        [
-            "bisect",
-            "start",
-            bad,
-        ] + list(good),
-        work_dir=ctx.obj["git_tree"],
-    )
+    raise NotImplementedError
+#    git(
+#        [
+#            "bisect",
+#            "start",
+#            bad,
+#        ] + list(good),
+#        work_dir=ctx.obj["git_tree"],
+#    )
 
 
 @click.command(
@@ -353,11 +256,17 @@ def bisect_start(ctx, bad, good):
     type=click.Path(exists=True),
 )
 @click.pass_context
+# TODO: support CC option?
 def bisect_run(ctx, filename):
+    """
+    Note that the script (my_script in the above example) should exit with code
+    0 if the current source code is good/old, and exit with a code between 1
+    and 127 (inclusive), except 125, if the current source code is bad/new.
+    """
     raise NotImplementedError
 
-#    build(
-#build(git_tree, make_opts, jobs, cc):
+    # TODO: run `git bisect run <bcontrol bisect-from-git` as a subprocess
+    #git_tree = ctx.obj["git_tree"]
 
 
 @click.command(
@@ -370,13 +279,14 @@ def bisect_run(ctx, filename):
 )
 @click.pass_context
 def bisect_good(ctx, revs):
-    git(
-        [
-            "bisect",
-            "good",
-        ] + list(revs),
-        work_dir=ctx.obj["git_tree"],
-    )
+    raise NotImplementedError
+    #git(
+    #    [
+    #        "bisect",
+    #        "good",
+    #    ] + list(revs),
+    #    work_dir=ctx.obj["git_tree"],
+    #)
 
 
 @click.command(
@@ -389,13 +299,14 @@ def bisect_good(ctx, revs):
 )
 @click.pass_context
 def bisect_bad(ctx, revs):
-    git(
-        [
-            "bisect",
-            "bad",
-        ] + list(revs),
-        work_dir=ctx.obj["git_tree"],
-    )
+    raise NotImplementedError
+    #git(
+    #    [
+    #        "bisect",
+    #        "bad",
+    #    ] + list(revs),
+    #    work_dir=ctx.obj["git_tree"],
+    #)
 
 
 @click.command(
@@ -408,13 +319,14 @@ def bisect_bad(ctx, revs):
 )
 @click.pass_context
 def bisect_skip(ctx, revs):
-    git(
-        [
-            "bisect",
-            "skip",
-        ] + list(revs),
-        work_dir=ctx.obj["git_tree"],
-    )
+    raise NotImplementedError
+    #git(
+    #    [
+    #        "bisect",
+    #        "skip",
+    #    ] + list(revs),
+    #    work_dir=ctx.obj["git_tree"],
+    #)
 
 
 @click.command(
@@ -423,13 +335,53 @@ def bisect_skip(ctx, revs):
 )
 @click.pass_context
 def bisect_log(ctx):
-    git(
-        [
-            "bisect",
-            "log",
-        ],
-        work_dir=ctx.obj["git_tree"],
-    )
+    raise NotImplementedError
+    #git(
+    #    [
+    #        "bisect",
+    #        "log",
+    #    ],
+    #    work_dir=ctx.obj["git_tree"],
+    #)
+
+
+@click.command(
+    name="from-git",
+    help="Use this sub-command when running `git bisect run` directly.",
+)
+@click.argument(
+    "filename",
+    type=click.Path(exists=True),
+)
+@click.pass_context
+def bisect_from_git(ctx, filename):
+    """
+    Kernel bisect algorithm.
+    """
+
+    git_tree = ctx.obj["git_tree"]
+
+    p_out, p_build = bcontroller.build(git_tree, make_opts=[], jobs=4, cc="", rpmbuild_topdir=DEFAULT_RPMBUILD_TOPDIR)
+    if p_build.returncode != 0:
+        return _BISECT_RET_SKIP
+
+    # Grep this from make output and use this rpm path for package installation
+    # Wrote: /tmp/bisect-my/RPMS/i386/kernel-5.1.0_rc3+-5.i386.rpm
+    rpms = re.findall(r"^Wrote:\s+(?P<pkg_path>.*(?<!\.rpm)\.rpm)$", p_out, re.MULTILINE)
+
+    # TODO: we must also check output and returncodes of ansible
+    _, p_ans = bcontroller.kernel_install(from_rpm=rpms[0], reboot=True)
+    if p_ans.returncode != 0:
+        return _BISECT_RET_ABORT
+
+    #uname_out = uname(["-r"])
+    #json.loads(p_out)
+    #check_booted_kernel using uname
+    # -> same as old one? -> bisect_skip
+    # -> booted into new one? -> continuing
+    # exit_state = run(filename=filename)
+    # -> propagate exit state into git-bisect
+
 
 
 cli.add_command(ping)
@@ -440,10 +392,11 @@ cli.add_command(reboot)
 cli.add_command(run)
 cli.add_command(sh)
 
-bisect.add_command(bisect_start)
-bisect.add_command(bisect_run)
-bisect.add_command(bisect_good)
-bisect.add_command(bisect_bad)
-bisect.add_command(bisect_skip)
-bisect.add_command(bisect_log)
+#bisect.add_command(bisect_start)
+#bisect.add_command(bisect_run)
+#bisect.add_command(bisect_good)
+#bisect.add_command(bisect_bad)
+#bisect.add_command(bisect_skip)
+#bisect.add_command(bisect_log)
+bisect.add_command(bisect_from_git)
 cli.add_command(bisect)
