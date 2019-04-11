@@ -326,7 +326,7 @@ def bisect_from_git(ctx, filename):
     Kernel bisect algorithm.
     """
     git_tree = ctx.obj["git_tree"]
-    sys.exit(bcontroller.bisect_from_git(git_tree, filename))
+    sys.exit(bcontroller.bisect_from_git(git_tree, filename, DEFAULT_RPMBUILD_TOPDIR))
 
 
 cli.add_command(ping)
