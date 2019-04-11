@@ -42,7 +42,15 @@ def dry(fnc, *args, **kwargs):
     return fnc(*args, **kwargs)
 
 
-@click.group()
+@click.group(
+    epilog=PROGRAM_EPILOG,
+    context_settings={
+        'help_option_names': [
+            '-h',
+            '--help',
+        ]
+    }
+)
 @click.option(
     "-l",
     "--log",
