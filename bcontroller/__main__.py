@@ -319,6 +319,15 @@ def bisect_log(ctx):
 
 
 @click.command(
+    name="reset",
+    help="Reset the bisect.",
+)
+@click.pass_context
+def bisect_reset(ctx):
+    dry(bcontroller.bisect_reset, ctx.obj["git_tree"])
+
+
+@click.command(
     name="from-git",
     help="Use this sub-command when running `git bisect run` directly.",
 )
@@ -349,5 +358,6 @@ bisect.add_command(bisect_good)
 bisect.add_command(bisect_bad)
 bisect.add_command(bisect_skip)
 bisect.add_command(bisect_log)
+bisect.add_command(bisect_reset)
 bisect.add_command(bisect_from_git)
 cli.add_command(bisect)

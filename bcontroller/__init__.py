@@ -227,6 +227,16 @@ def bisect_log(git_tree):
     )
 
 
+def bisect_reset(git_tree):
+    return git(
+        [
+            "bisect",
+            "reset",
+        ],
+        work_dir=git_tree,
+    )
+
+
 def bisect_from_git(git_tree, filename, rpmbuild_topdir):
     """
     Kernel bisect algorithm.
