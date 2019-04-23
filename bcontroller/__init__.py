@@ -175,14 +175,16 @@ def run(filename):
 
 
 def bisect_start(git_tree, bad, good):
-    return git(
-        [
-            "bisect",
-            "start",
-            bad,
-        ] + list(good),
-        work_dir=git_tree,
-    )
+    start_cmd = [
+        "bisect",
+        "start",
+    ]
+
+    if bad is not None:
+        start_cmd.append(bad)
+
+    start_cmd += list(good)
+    return git(start_cmd, work_dir=git_tree)
 
 
 def bisect_good(git_tree, revs):

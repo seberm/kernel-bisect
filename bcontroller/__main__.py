@@ -236,7 +236,6 @@ def bisect(ctx, git_tree):
 )
 @click.argument(
     "bad",
-    default="",
     required=False,
 )
 @click.argument(
