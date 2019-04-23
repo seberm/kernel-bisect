@@ -74,7 +74,9 @@ def kernel_install(from_rpm, reboot):
     ])
 
 
-def build(git_tree, make_opts, jobs, cc, rpmbuild_topdir):
+# TODO: what about kernel config? we should stop if there is no config...or run
+# make olddefconfig?
+def build(git_tree, make_opts, jobs, cc, rpmbuild_topdir, oldconfig):
     info("Current rpmbuild topdir: %s", rpmbuild_topdir)
 
     # Change OS environment only for the following command, not for whole
@@ -82,6 +84,17 @@ def build(git_tree, make_opts, jobs, cc, rpmbuild_topdir):
     modified_env = os.environ.copy()
     if cc:
         modified_env["CC"] = cc
+
+    if oldconfig:
+        config_cmd = [
+            "make",
+            "-C",
+            git_tree,
+
+            # Makefile target
+            "oldconfig",
+        ]
+        run_command(config_cmd, env=modified_env)
 
     build_cmd = [
         "make",

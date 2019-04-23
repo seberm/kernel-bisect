@@ -140,8 +140,15 @@ def uname(args):
     show_default=True,
     help="Sets the rpmbuild _topdir variable. It is a place where rpmbuild create all RPM related files (spec file, SRPM, sources, etc.).",
 )
-def build(git_tree, make_opts, jobs, cc, rpmbuild_topdir):
-    dry(bcontroller.build, git_tree, make_opts, jobs, cc, rpmbuild_topdir)
+@click.option(
+    "--oldconfig",
+    default=True,
+    is_flag=True,
+    show_default=True,
+    help="Try to regenerate kernel configuration file using the `make oldconfig`.",
+)
+def build(git_tree, make_opts, jobs, cc, rpmbuild_topdir, oldconfig):
+    dry(bcontroller.build, git_tree, make_opts, jobs, cc, rpmbuild_topdir, oldconfig)
 
 
 @click.command(
