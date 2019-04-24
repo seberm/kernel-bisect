@@ -66,6 +66,7 @@ def kernel_install(from_rpm, reboot):
     if not reboot:
         warning("kernel-install: not rebooting the kernel, option -R/--no-reboot is active.")
 
+    debug("kernel-install: installing new kernel using ansible")
     return run_command([
         "ansible-playbook",
         "--inventory",
@@ -254,7 +255,6 @@ def bisect_from_git(git_tree, filename, rpmbuild_topdir):
     """
     Kernel bisect algorithm.
     """
-
     p_out, p_build = build(git_tree, make_opts=[], jobs=multiprocessing.cpu_count(), cc="", rpmbuild_topdir=rpmbuild_topdir, oldconfig=True)
     if p_build.returncode != 0:
         return _BISECT_RET_SKIP
@@ -277,6 +277,7 @@ def bisect_from_git(git_tree, filename, rpmbuild_topdir):
 
     _, p_run = run(filename)
     return p_run.returncode
+
 
 def check_installed_kernel(must_match_kernel):
     debug("check-installed-kernel: must match: %s", must_match_kernel)
