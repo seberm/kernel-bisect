@@ -15,6 +15,8 @@ __version__ = "v0.0.1"
 _DRY_RUN_ACTIVE = False
 _CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 
+os.environ["ANSIBLE_CONFIG"] = os.path.join(_CUR_DIR, "../ansible.cfg")
+
 # 0 -> good
 # 1 <= N <= 127 (except 125) -> bad
 # 127> -> aborts bisect
