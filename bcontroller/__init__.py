@@ -67,6 +67,8 @@ def kernel_install(from_rpm, reboot):
 
     return run_command([
         "ansible-playbook",
+        "--inventory",
+        os.path.join(_CUR_DIR, "../remotes.txt"),
         "--limit",
         "duts",
         os.path.join(_CUR_DIR, "../playbooks/install-kernel.yml"),
@@ -125,6 +127,8 @@ def reboot(use):
         mgmt_password = "PASSW0RD"
         return run_command([
             "ansible",
+            "--inventory",
+            os.path.join(_CUR_DIR, "../remotes.txt"),
             "-m",
             "ipmi_power",
             "-a",
@@ -136,6 +140,8 @@ def reboot(use):
     else:
         return run_command([
             "ansible",
+            "--inventory",
+            os.path.join(_CUR_DIR, "../remotes.txt"),
             "-m",
             "reboot",
             "-a"
@@ -146,6 +152,8 @@ def reboot(use):
 def ping():
     return run_command([
         "ansible-playbook",
+        "--inventory",
+        os.path.join(_CUR_DIR, "../remotes.txt"),
         "--limit",
         "duts",
         os.path.join(_CUR_DIR, "../playbooks/test.yml"),
@@ -155,6 +163,8 @@ def ping():
 def sh(command, args):
     return run_command([
         "ansible",
+        "--inventory",
+        os.path.join(_CUR_DIR, "../remotes.txt"),
         "-m",
         "command",
         "-a",
@@ -167,6 +177,8 @@ def run(filename):
     abs_path_filename = os.path.abspath(filename)
     return run_command([
         "ansible-playbook",
+        "--inventory",
+        os.path.join(_CUR_DIR, "../remotes.txt"),
         "--limit",
         "duts",
         os.path.join(_CUR_DIR, "../playbooks/run.yml"),
