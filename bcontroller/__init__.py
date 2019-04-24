@@ -3,6 +3,7 @@ import subprocess
 import os
 import re
 import json
+import multiprocessing
 from logging import debug, info, warning
 
 
@@ -254,7 +255,7 @@ def bisect_from_git(git_tree, filename, rpmbuild_topdir):
     Kernel bisect algorithm.
     """
 
-    p_out, p_build = build(git_tree, make_opts=[], jobs=4, cc="", rpmbuild_topdir=rpmbuild_topdir)
+    p_out, p_build = build(git_tree, make_opts=[], jobs=multiprocessing.cpu_count(), cc="", rpmbuild_topdir=rpmbuild_topdir, oldconfig=True)
     if p_build.returncode != 0:
         return _BISECT_RET_SKIP
 
