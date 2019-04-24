@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import multiprocessing
 import tempfile
 from logging import warning, info
 
@@ -125,7 +126,7 @@ def uname(args):
 @click.option(
     "-j",
     "--jobs",
-    default=1,
+    default=multiprocessing.cpu_count(),
     show_default=True,
     help="Specifies the number of jobs (commands) to run simultaneously.",
 )
