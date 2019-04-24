@@ -263,13 +263,20 @@ def bisect_from_git(git_tree, filename, rpmbuild_topdir):
     # Wrote: /tmp/bisect-my/RPMS/i386/kernel-5.1.0_rc3+-5.i386.rpm
     rpms = re.findall(r"^Wrote:\s+(?P<pkg_path>.*(?<!\.rpm)\.rpm)$", p_out, re.MULTILINE)
 
-    m_groups = re.match(r"^kernel-(?P<kernel_version>.*(?<!\.rpm))\.rpm$", os.path.basename(rpms[0]))
-    built_kernel_version = m_groups.group("kernel_version")
-
     # TODO: we must also check output and returncodes of ansible
     _, p_ans = kernel_install(from_rpm=rpms[0], reboot=True)
     if p_ans.returncode != 0:
         return _BISECT_RET_ABORT
+
+    # Retrieve kernel version from filename
+    m_groups = re.match(r"^kernel-(?P<kernel_version>.*(?<!\.rpm))\.rpm$", os.path.basename(rpms[0]))
+    built_kernel_version = m_groups.group("kernel_version")
+    if not check_installed_kernel(must_match_kernel=built_kernel_version):
+        # Kernel did not boot correctly - panic?
+        return _BISECT_RET_SKIP
+
+    _, p_run = run(filename)
+    return p_run.returncode
 
 def check_installed_kernel(must_match_kernel):
     debug("check-installed-kernel: must match: %s", must_match_kernel)
