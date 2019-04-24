@@ -271,19 +271,20 @@ def bisect_from_git(git_tree, filename, rpmbuild_topdir):
     if p_ans.returncode != 0:
         return _BISECT_RET_ABORT
 
+def check_installed_kernel(must_match_kernel):
+    debug("check-installed-kernel: must match: %s", must_match_kernel)
     # Check if the booted kernel matches the built kernel
     uname_ans_out, p_uname = sh("uname", ["-r"])
     if p_uname.returncode != 0:
         return _BISECT_RET_ABORT
 
     uname_ans_d = json.loads(uname_ans_out)
-    duts = uname_ans_d["plays"]["play"]["tasks"][0]["hosts"]
+    duts = uname_ans_d["plays"][0]["tasks"][0]["hosts"]
 
     for host, val in duts.items():
         uname_kernel_ver = val["stdout"]
-        if built_kernel_version != uname_kernel_ver:
-            # Kernel did not boot correctly - panic?
-            return _BISECT_RET_SKIP
+        debug("check-installed-kernel: %s: %s", host, uname_kernel_ver)
+        if must_match_kernel != uname_kernel_ver:
+            return False
 
-    _, p_run = run(filename)
-    return p_run.returncode
+    return True
