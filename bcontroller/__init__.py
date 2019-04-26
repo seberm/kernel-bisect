@@ -56,6 +56,46 @@ def git(args, work_dir=os.getcwd()):
     return run_command(cmd_args)
 
 
+def ansible(module_name, limit, params=""):
+    ansible_cmd = [
+        "ansible",
+        "-m",
+        module_name,
+    ]
+
+    if params:
+        ansible_cmd += [
+            "--args",
+            params,
+        ]
+
+    # Limit hosts
+    ansible_cmd.append(limit)
+
+    return run_command(ansible_cmd)
+
+
+def ansible_playbook(playbook, limit, **argv):
+    params = " ".join(
+        f"{key}={val}" for key, val in argv.items()
+    )
+
+    if params:
+        params = f"--extra-vars {params}"
+
+    ansible_playbook_cmd = [
+        "ansible-playbook",
+        "--limit",
+        limit,
+        playbook,
+    ]
+
+    if params:
+        ansible_playbook_cmd.append(params)
+
+    return run_command(ansible_playbook_cmd)
+
+
 # TODO: support multiple rpms?
 def kernel_install(from_rpm, reboot):
     """
@@ -69,13 +109,13 @@ def kernel_install(from_rpm, reboot):
         warning("kernel-install: not rebooting the kernel, option -R/--no-reboot is active.")
 
     debug("kernel-install: installing new kernel using ansible")
-    return run_command([
-        "ansible-playbook",
-        "--limit",
-        "duts",
+    return ansible_playbook(
         os.path.join(_CUR_DIR, "../playbooks/install-kernel.yml"),
-        f"-e kernel_pkg_path={from_rpm} kernel_pkg={rpm_filename} reboot={reboot}",
-    ])
+        "duts",
+        kernel_pkg_path=from_rpm,
+        kernel_pkg=rpm_filename,
+        reboot=reboot,
+    )
 
 
 # TODO: what about kernel config? we should stop if there is no config...or run
@@ -127,55 +167,44 @@ def reboot(use):
         mgmt_host = ""  # TODO
         mgmt_user = "USERID"
         mgmt_password = "PASSW0RD"
-        return run_command([
-            "ansible",
-            "-m",
+        return ansible(
             "ipmi_power",
-            "-a",
-            f"state=reset name={mgmt_host} user={mgmt_user} password={mgmt_password}",
-
-            # Limit hosts
-            "duts-mgmt"
-        ])
+            "duts-mgmt",
+            state="reset",
+            name=mgmt_host,
+            user=mgmt_user,
+            password=mgmt_password,
+        )
     else:
-        return run_command([
-            "ansible",
-            "-m",
+        return ansible(
             "reboot",
-            "-a"
-            "reboot_timeout=0",
-        ])
+            "duts",
+            reboot_timeout=0,
+        )
 
 
 def ping():
-    return run_command([
-        "ansible-playbook",
-        "--limit",
-        "duts",
+    return ansible_playbook(
         os.path.join(_CUR_DIR, "../playbooks/test.yml"),
-    ])
+        "duts",
+    )
 
 
 def sh(command, args):
-    return run_command([
-        "ansible",
-        "-m",
+    return ansible(
         "command",
-        "-a",
-        "%s %s" % (command, " ".join(args)),
         "duts",
-    ])
+        "%s %s" % (command, " ".join(args)),
+    )
 
 
 def run(filename):
     abs_path_filename = os.path.abspath(filename)
-    return run_command([
-        "ansible-playbook",
-        "--limit",
-        "duts",
+    return ansible_playbook(
         os.path.join(_CUR_DIR, "../playbooks/run.yml"),
-        f"-e filename={abs_path_filename}",
-    ])
+        "duts",
+        filename=abs_path_filename,
+    )
 
 
 def bisect_start(git_tree, bad, good):
