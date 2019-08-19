@@ -12,7 +12,7 @@ sudo dnf install python3-click ansible git
 
 #### pip
 ```
-$ pip install -r requirements.txt
+$ pip install --user -r requirements.txt
 $ python setup.py install
 ```
 
