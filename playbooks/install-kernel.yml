@@ -24,19 +24,20 @@
     - name: Set default kernel to the installed one (only for next boot)
       command: grub2-reboot 0
 
-    - name: get current default kernel using grubby
+    - name: Get current default kernel using grubby
       command: grubby --default-kernel
       register: current_default_kernel
 
-    - name: "current default kernel (grub)"
-      debug: msg="{{ current_default_kernel.stdout }}"
+    - name: Current default kernel (grub)
+      debug:
+        msg: "{{ current_default_kernel.stdout }}"
 
-    - name: enforce system reboot on panic after N seconds
+    - name: Enforce system reboot on panic after N seconds
       command: grubby --args="panic=10" --update-kernel=ALL
 
     - name: Reboot system into newly installed kernel
       reboot:
-        reboot_timeout: 600 # 10 minutes
+        reboot_timeout: 600 # seconds
       when: in_reboot == True
 
     - name: Running kernel version

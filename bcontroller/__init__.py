@@ -8,7 +8,7 @@ from logging import debug, info, warning
 
 
 __author__ = "Otto Sabart"
-__maintainer__ = "Otto Sabart"
+__maintainer__ = __author__
 __email__ = "seberm@seberm.com"
 __version__ = "v0.0.1"
 
