@@ -1,0 +1,13 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+tox = "*"
+
+[packages]
+Click = ">=7.0"
+ansible = "*"
+
+[requires]
