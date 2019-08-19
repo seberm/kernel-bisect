@@ -38,7 +38,7 @@
     - name: Reboot system into newly installed kernel
       reboot:
         reboot_timeout: 600 # seconds
-      when: in_reboot == True
+      when: in_reboot
 
     - name: Running kernel version
       debug:

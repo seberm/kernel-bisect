@@ -108,7 +108,7 @@ def uname(args):
 
 
 @click.command(
-    help="Build kernel inside its working directory",
+    help="Build kernel inside its working directory.",
 )
 @click.option(
     "-C",

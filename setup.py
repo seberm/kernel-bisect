@@ -2,8 +2,8 @@
 
 from setuptools import setup
 
-with open("README.md", "r", encoding="utf-8") as f:
-    readme = f.read()
+#with open("README.md", "r", encoding="utf-8") as f:
+#    readme = f.read()
 
 setup(
     name="kernel-bcontrol",
@@ -14,10 +14,10 @@ setup(
     #        subcommand)
     #cmdclasy=versioneer.get_cmdclass(),
     description="Automation of kernel git bisection.",
-    long_description=readme,
+    #long_description=readme,
     author="Otto Sabart",
     author_email="seberm@seberm.com",
-    #url="",
+    url="https://github.com/seberm/kernel-bisect",
     keywords=[],
     include_package_data=True,
     packages=[
