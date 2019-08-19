@@ -3,6 +3,6 @@
 all: 
 
 clean:
-	rm -rf .tox
-	-find . -type f -name "*.pyc" -exec rm -f {} \;
-	-find . -type d -name "__pycache__" -exec rm -rf {} \;
+	rm -rvf .tox dist kernel_bcontrol.egg-info
+	-find . -type f -name "*.pyc" -exec rm -vf {} \;
+	-find . -type d -name "__pycache__" -exec rm -rvf {} \;
