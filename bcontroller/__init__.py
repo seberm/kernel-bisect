@@ -28,8 +28,8 @@ class BControlError(Exception):
 
 
 class BControlCommandError(BControlError):
-    def __init__(self, message, args, process, output):
-        super().__init__(message)
+    def __init__(self, args, process, output):
+        super().__init__("Program [$ %s] exited with non-zero exit state (%d). Output:\n%s" % (" ".join(args), process.returncode, output))
         self.__dict__.update(locals())
 
 
@@ -68,7 +68,6 @@ def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
 
     if process.returncode != 0:
         raise BControlCommandError(
-            "Program exited with non-zero exit state",
             args,
             process,
             output,
