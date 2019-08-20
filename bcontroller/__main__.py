@@ -118,7 +118,8 @@ def kernel_install(from_rpm, reboot):
     #default=["--all"],
 )
 def uname(args):
-    bcontroller.sh("uname", args)
+    out, _ = dry(bcontroller.sh, "uname", args)
+    print(out)
 
 
 @click.command(
@@ -215,7 +216,8 @@ def ping():
     nargs=-1,
 )
 def sh(command, args):
-    dry(bcontroller.sh, command, args)
+    out, _ = dry(bcontroller.sh, command, args)
+    print(out)
 
 
 @click.command(
@@ -229,7 +231,8 @@ def sh(command, args):
     ),
 )
 def run(filename):
-    dry(run, filename)
+    out, _ = dry(run, filename)
+    print(out)
 
 
 @click.group(
