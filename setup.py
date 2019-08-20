@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 
 from setuptools import setup
+import versioneer
 
 #with open("README.md", "r", encoding="utf-8") as f:
 #    readme = f.read()
 
 setup(
     name="kernel-bcontrol",
-    #version=versioneer.get_version(),
-    version="v0.0.1",
-
-    # FIXME: Unfortunately this does not work with setuptools (bdist_rpm
-    #        subcommand)
-    #cmdclasy=versioneer.get_cmdclass(),
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     description="Automation of kernel git bisection.",
     #long_description=readme,
     author="Otto Sabart",

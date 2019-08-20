@@ -4,13 +4,18 @@ import os
 import re
 import json
 import multiprocessing
+import logging
 from logging import debug, info, warning
+
+from ._version import get_versions
+v = get_versions()
+__version__ = v.get("closest-tag", v["version"])
+del get_versions, v
 
 
 __author__ = "Otto Sabart"
 __maintainer__ = __author__
 __email__ = "seberm@seberm.com"
-__version__ = "v0.0.1"
 
 _DRY_RUN_ACTIVE = False
 _CUR_DIR = os.path.dirname(os.path.realpath(__file__))

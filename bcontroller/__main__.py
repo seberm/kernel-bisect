@@ -51,7 +51,7 @@ def dry(fnc, *args, **kwargs):
     show_default=True,
     help="Set logging level.",
 )
-@click.version_option(version=__version__)
+@click.version_option(version="v%s" % __version__)
 @click.option(
     "-n",
     "--dry-run",
