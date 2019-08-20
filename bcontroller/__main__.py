@@ -45,7 +45,7 @@ def dry(fnc, *args, **kwargs):
     "--log",
     type=click.Choice(
         ["DEBUG", "WARNING", "INFO", "ERROR", "EXCEPTION"],
-        case_sensitive=False,
+        #case_sensitive=False,
     ),
     default=DEFAULT_LOGGING_MODE,
     show_default=True,
