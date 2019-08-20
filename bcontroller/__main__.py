@@ -78,10 +78,15 @@ def cli(ctx, log, dry_run):
 
 @click.command(
     help="Install given kernel into DUT and reboot into it.",
+    name="kernel-install"
 )
 @click.option(
     "--from-rpm",
     required=True,
+    type=click.Path(
+        exists=True,
+        dir_okay=False,
+    ),
     help="Path to RPM package to install on all DUTs.",
 )
 @click.option(
@@ -115,7 +120,11 @@ def uname(args):
     "--git-tree",
     default=os.getcwd(),
     show_default=True,
-    type=click.Path(exists=True),
+    type=click.Path(
+        exists=True,
+        writable=True,
+        file_okay=False,
+    ),
     help="Path to the git working directory.",
 )
 @click.option(
@@ -205,7 +214,10 @@ def sh(command, args):
 )
 @click.argument(
     "filename",
-    type=click.Path(exists=True),
+    type=click.Path(
+        exists=True,
+        dir_okay=False,
+    ),
 )
 def run(filename):
     dry(run, filename)
@@ -219,7 +231,11 @@ def run(filename):
     "--git-tree",
     default=os.getcwd(),
     show_default=True,
-    type=click.Path(exists=True),
+    type=click.Path(
+        exists=True,
+        writable=True,
+        file_okay=False,
+    ),
     help="Path to the git working directory.",
 )
 @click.pass_context
@@ -255,7 +271,10 @@ def bisect_start(ctx, bad, good):
 )
 @click.argument(
     "filename",
-    type=click.Path(exists=True),
+    type=click.Path(
+        exists=True,
+        dir_okay=False,
+    ),
 )
 @click.pass_context
 # TODO: support CC option?
@@ -330,11 +349,14 @@ def bisect_reset(ctx):
 
 @click.command(
     name="from-git",
-    help="Use this sub-command when running `git bisect run` directly.",
+    help="Use this sub-command when running `git bisect run` directly. FILENAME is the name of a bisect script.",
 )
 @click.argument(
     "filename",
-    type=click.Path(exists=True),
+    type=click.Path(
+        exists=True,
+        dir_okay=False,
+    ),
 )
 @click.pass_context
 def bisect_from_git(ctx, filename):
