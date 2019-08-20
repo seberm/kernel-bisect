@@ -22,7 +22,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "kernel-bcontrol = bcontrol.__main__:cli",
+            "kernel-bcontrol = bcontroller.__main__:cli",
         ]
     },
     options={
