@@ -41,7 +41,9 @@ def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
     process = subprocess.Popen(args, stdout=stdout, stderr=stderr, env=env)
     out = []
     for c in iter(lambda: process.stdout.read(1), b''):
-        sys.stdout.buffer.write(c)
+        if logging.root.level == logging.DEBUG:
+            sys.stdout.buffer.write(c)
+
         sys.stdout.flush()
         out.append(c.decode('utf-8'))
 
