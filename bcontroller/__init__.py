@@ -83,12 +83,9 @@ def ansible(module_name, limit, params=""):
 
 
 def ansible_playbook(playbook, limit, **argv):
-    params = " ".join(
+    extra_vars = " ".join(
         f"{key}={val}" for key, val in argv.items()
     )
-
-    if params:
-        params = f"--extra-vars {params}"
 
     ansible_playbook_cmd = [
         "ansible-playbook",
@@ -97,13 +94,14 @@ def ansible_playbook(playbook, limit, **argv):
         playbook,
     ]
 
-    if params:
-        ansible_playbook_cmd.append(params)
+    if extra_vars:
+        ansible_playbook_cmd.append("--extra-vars")
+        ansible_playbook_cmd.append(extra_vars)
 
     return run_command(ansible_playbook_cmd)
 
 
-# TODO: support multiple rpms?
+# TODO: support multiple rpms? (kernel-headers?)
 def kernel_install(from_rpm, reboot):
     """
     Install given kernel to the target system(s) and try to boot into it. This
