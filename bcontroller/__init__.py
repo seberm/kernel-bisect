@@ -36,6 +36,12 @@ class BControlError(Exception):
     pass
 
 
+class BControlCommandError(BControlError):
+    def __init__(self, message, args, process, output):
+        super().__init__(message)
+        self.__dict__.update(locals())
+
+
 def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
     debug("Running CMD: %s", args)
     process = subprocess.Popen(args, stdout=stdout, stderr=stderr, env=env)
@@ -49,6 +55,14 @@ def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
 
     process.communicate()
     output = ''.join(out)
+
+    if process.returncode != 0:
+        raise BControlCommandError(
+            "Program exited with non-zero exit state",
+            args,
+            process,
+            output,
+        )
 
     return output, process
 
@@ -277,10 +291,18 @@ def bisect_reset(git_tree):
 
 def bisect_from_git(git_tree, filename, rpmbuild_topdir):
     """
-    Kernel bisect algorithm.
+    Kernel bisect algorithm for $ git bisect run %prog from-git.
     """
-    p_out, p_build = build(git_tree, make_opts=[], jobs=multiprocessing.cpu_count(), cc="", rpmbuild_topdir=rpmbuild_topdir, oldconfig=True)
-    if p_build.returncode != 0:
+    try:
+        p_out, p_build = build(
+            git_tree,
+            make_opts=[],
+            jobs=multiprocessing.cpu_count(),
+            cc="",
+            rpmbuild_topdir=rpmbuild_topdir,
+            oldconfig=True,
+        )
+    except BControlCommandError:
         return _BISECT_RET_SKIP
 
     # Grep this from make output and use this rpm path for package installation
@@ -288,8 +310,10 @@ def bisect_from_git(git_tree, filename, rpmbuild_topdir):
     rpms = re.findall(r"^Wrote:\s+(?P<pkg_path>.*(?<!\.rpm)\.rpm)$", p_out, re.MULTILINE)
 
     # TODO: we must also check output and returncodes of ansible
-    _, p_ans = kernel_install(from_rpm=rpms[0], reboot=True)
-    if p_ans.returncode != 0:
+    try:
+        #_, p_ans = kernel_install(from_rpm=rpms[0], reboot=True)
+        _, p_ans = kernel_install(from_rpm=rpms[0], reboot=False)
+    except BControlCommandError:
         return _BISECT_RET_ABORT
 
     # Retrieve kernel version from filename
@@ -299,16 +323,23 @@ def bisect_from_git(git_tree, filename, rpmbuild_topdir):
         # Kernel did not boot correctly - panic?
         return _BISECT_RET_SKIP
 
-    _, p_run = run(filename)
-    return p_run.returncode
+    try:
+        _, p_run = run(filename)
+    except BControlCommandError as e:
+        return e.process.returncode
+    else:
+        return p_run.returncode
 
 
 def check_installed_kernel(must_match_kernel):
+    """
+    Check if the booted kernel matches the built kernel.
+    """
     debug("check-installed-kernel: must match: %s", must_match_kernel)
-    # Check if the booted kernel matches the built kernel
-    uname_ans_out, p_uname = sh("uname", ["-r"])
-    if p_uname.returncode != 0:
-        return _BISECT_RET_ABORT
+    try:
+        uname_ans_out, p_uname = sh("uname", ["-r"])
+    except BControlCommandError:
+        return False
 
     uname_ans_d = json.loads(uname_ans_out)
     duts = uname_ans_d["plays"][0]["tasks"][0]["hosts"]
