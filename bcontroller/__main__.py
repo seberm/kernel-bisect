@@ -284,10 +284,23 @@ def bisect_run(ctx, filename):
     0 if the current source code is good/old, and exit with a code between 1
     and 127 (inclusive), except 125, if the current source code is bad/new.
     """
-    raise NotImplementedError
-
+    warning("For now please run bisection using the git as follows: $ git bisect run kernel-bcontrol bisect from-git")
     # TODO: run `git bisect run <bcontrol bisect-from-git` as a subprocess
     #git_tree = ctx.obj["git_tree"]
+
+    # Run git-bisect as a subprocess.
+    #dry(bcontroller.run_command, [
+    #    "git",
+    #    "-C",
+    #    git_tree,
+    #    "bisect",
+    #    "run",
+    #    "python",
+    #    os.path.join(_CUR_DIR, "../bcontrol.py"),
+    #    "bisect",
+    #    "from-git",
+    #    filename,
+    #])
 
 
 @click.command(
