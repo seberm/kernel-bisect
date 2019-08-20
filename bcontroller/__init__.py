@@ -42,6 +42,10 @@ class BControlCommandError(BControlError):
         self.__dict__.update(locals())
 
 
+def convert_json(json_input):
+    return json.loads(json_input)
+
+
 def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
     debug("Running CMD: %s", args)
     process = subprocess.Popen(args, stdout=stdout, stderr=stderr, env=env)
@@ -341,7 +345,7 @@ def check_installed_kernel(must_match_kernel):
     except BControlCommandError:
         return False
 
-    uname_ans_d = json.loads(uname_ans_out)
+    uname_ans_d = convert_json(uname_ans_out)
     duts = uname_ans_d["plays"][0]["tasks"][0]["hosts"]
 
     for host, val in duts.items():
