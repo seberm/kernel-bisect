@@ -3,7 +3,7 @@ import os
 import sys
 import multiprocessing
 import tempfile
-from logging import warning, info
+from logging import warning, info, error
 
 import click
 
@@ -19,6 +19,15 @@ DEFAULT_RPMBUILD_TOPDIR = os.path.join(
 
 PROGRAM_DESCRIPTION = "Some text."
 PROGRAM_EPILOG = ""
+
+# 0 -> good
+# 1 <= N <= 127 (except 125) -> bad
+# 127> -> aborts bisect
+# 125 -> skip
+_BISECT_RET_GOOD = 0
+_BISECT_RET_BAD = 1
+_BISECT_RET_SKIP = 125
+_BISECT_RET_ABORT = 128
 
 _CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -377,7 +386,21 @@ def bisect_from_git(ctx, filename):
     Kernel bisect algorithm.
     """
     git_tree = ctx.obj["git_tree"]
-    sys.exit(bcontroller.bisect_from_git(git_tree, filename, DEFAULT_RPMBUILD_TOPDIR))
+
+    retcode = _BISECT_RET_ABORT
+    try:
+        retcode = bcontroller.bisect_from_git(git_tree, filename, DEFAULT_RPMBUILD_TOPDIR)
+    except bcontroller.BControlBisectSkip:
+        retcode = _BISECT_RET_SKIP
+    except bcontroller.BControlBisectAbort:
+        retcode = _BISECT_RET_ABORT
+    except bcontroller.BControlCommandError:
+        error("This should never happen - all BControlCommandError exceptions should be catched directly inside the bisect_from_git function.")
+        retcode = _BISECT_RET_ABORT
+    except Exception:
+        retcode = _BISECT_RET_ABORT
+
+    sys.exit(retcode)
 
 
 cli.add_command(ping)

@@ -22,15 +22,6 @@ _CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 
 os.environ["ANSIBLE_CONFIG"] = os.path.join(_CUR_DIR, "../ansible.cfg")
 
-# 0 -> good
-# 1 <= N <= 127 (except 125) -> bad
-# 127> -> aborts bisect
-# 125 -> skip
-_BISECT_RET_GOOD = 0
-_BISECT_RET_BAD = 1
-_BISECT_RET_SKIP = 125
-_BISECT_RET_ABORT = 128
-
 
 class BControlError(Exception):
     pass
@@ -40,6 +31,21 @@ class BControlCommandError(BControlError):
     def __init__(self, message, args, process, output):
         super().__init__(message)
         self.__dict__.update(locals())
+
+
+class BControlBisect(Exception):
+    """
+    Abstract bisect exception.
+    """
+    pass
+
+
+class BControlBisectSkip(BControlBisect):
+    pass
+
+
+class BControlBisectAbort(BControlBisect):
+    pass
 
 
 def convert_json(json_input):
@@ -159,7 +165,7 @@ def build(git_tree, make_opts, jobs, cc, rpmbuild_topdir, oldconfig):
             git_tree,
 
             # Makefile target
-            "oldconfig",
+            "oldconfig",  # or use olddefconfig?
         ]
         run_command(config_cmd, env=modified_env)
 
@@ -307,7 +313,7 @@ def bisect_from_git(git_tree, filename, rpmbuild_topdir):
             oldconfig=True,
         )
     except BControlCommandError:
-        return _BISECT_RET_SKIP
+        raise BControlBisectSkip
 
     # Grep this from make output and use this rpm path for package installation
     # Wrote: /tmp/bisect-my/RPMS/i386/kernel-5.1.0_rc3+-5.i386.rpm
@@ -318,14 +324,14 @@ def bisect_from_git(git_tree, filename, rpmbuild_topdir):
         #_, p_ans = kernel_install(from_rpm=rpms[0], reboot=True)
         _, p_ans = kernel_install(from_rpm=rpms[0], reboot=False)
     except BControlCommandError:
-        return _BISECT_RET_ABORT
+        raise BControlBisectAbort
 
     # Retrieve kernel version from filename
     m_groups = re.match(r"^kernel-(?P<kernel_version>.*(?<!\.rpm))\.rpm$", os.path.basename(rpms[0]))
     built_kernel_version = m_groups.group("kernel_version")
     if not check_installed_kernel(must_match_kernel=built_kernel_version):
         # Kernel did not boot correctly - panic?
-        return _BISECT_RET_SKIP
+        raise BControlBisectSkip
 
     try:
         _, p_run = run(filename)
