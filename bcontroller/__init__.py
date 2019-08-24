@@ -7,6 +7,8 @@ import multiprocessing
 import logging
 from logging import debug, info, warning
 
+import click
+
 from ._version import get_versions
 v = get_versions()
 __version__ = v.get("closest-tag", v["version"])
@@ -23,7 +25,7 @@ _CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 os.environ["ANSIBLE_CONFIG"] = os.path.join(_CUR_DIR, "../ansible.cfg")
 
 
-class BControlError(Exception):
+class BControlError(click.ClickException):
     pass
 
 
