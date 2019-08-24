@@ -105,7 +105,12 @@ def ansible(module_name, limit, params=""):
     # Limit hosts
     ansible_cmd.append(limit)
 
-    return run_command(ansible_cmd)
+    try:
+        return run_command(ansible_cmd)
+    except BControlCommandError as e:
+        # Parse ansible JSON output to get error message
+        ans_out = convert_json(e.output)
+        raise BControlError(ans_out["stats"])
 
 
 def ansible_playbook(playbook, limit, **argv):
