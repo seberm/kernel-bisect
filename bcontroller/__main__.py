@@ -11,7 +11,7 @@ from bcontroller import __version__
 import bcontroller
 
 
-DEFAULT_LOGGING_MODE = "INFO"
+DEFAULT_LOGGING_MODE = "WARNING"
 DEFAULT_RPMBUILD_TOPDIR = os.path.join(
     tempfile.gettempdir(),
     "rpmbuild-kernel-bisect",
