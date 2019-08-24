@@ -124,7 +124,12 @@ def ansible_playbook(playbook, limit, **argv):
         ansible_playbook_cmd.append("--extra-vars")
         ansible_playbook_cmd.append(extra_vars)
 
-    return run_command(ansible_playbook_cmd)
+    try:
+        return run_command(ansible_playbook_cmd)
+    except BControlCommandError as e:
+        # Parse ansible JSON output to get error message
+        ans_out = convert_json(e.output)
+        raise BControlError(ans_out["stats"])
 
 
 # TODO: support multiple rpms? (kernel-headers?)
