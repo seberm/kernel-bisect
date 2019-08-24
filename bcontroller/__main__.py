@@ -11,7 +11,7 @@ from bcontroller import __version__
 import bcontroller
 
 
-DEFAULT_LOGGING_MODE = "WARNING"
+DEFAULT_LOGGING_MODE = "warning"
 DEFAULT_RPMBUILD_TOPDIR = os.path.join(
     tempfile.gettempdir(),
     "rpmbuild-kernel-bisect",
@@ -53,7 +53,7 @@ def dry(fnc, *args, **kwargs):
     "-l",
     "--log",
     type=click.Choice(
-        ["DEBUG", "WARNING", "INFO", "ERROR", "EXCEPTION"],
+        ["debug", "warning", "info", "error", "exception"],
         #case_sensitive=False,
     ),
     default=DEFAULT_LOGGING_MODE,
