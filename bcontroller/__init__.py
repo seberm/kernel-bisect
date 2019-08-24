@@ -30,8 +30,8 @@ class BControlError(click.ClickException):
 
 
 class BControlCommandError(BControlError):
-    def __init__(self, args, process, output):
-        super().__init__("Program [$ %s] exited with non-zero exit state (%d). Output:\n%s" % (" ".join(args), process.returncode, output))
+    def __init__(self, args, process, output, stderr_output):
+        super().__init__("Program [$ %s] exited with non-zero exit state (%d).\n\nOutput:\n%s\n\n Stderr output:\n%s" % (" ".join(args), process.returncode, output, stderr_output))
         self.__dict__.update(locals())
 
 
@@ -54,7 +54,7 @@ def convert_json(json_input):
     return json.loads(json_input)
 
 
-def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
+def run_command(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=None):
     debug("Running CMD: %s", args)
     process = subprocess.Popen(args, stdout=stdout, stderr=stderr, env=env)
     out = []
@@ -65,7 +65,7 @@ def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
         sys.stdout.flush()
         out.append(c.decode('utf-8'))
 
-    process.communicate()
+    _, stderr_output = process.communicate()
     output = ''.join(out)
 
     if process.returncode != 0:
@@ -73,6 +73,7 @@ def run_command(args, stdout=subprocess.PIPE, stderr=None, env=None):
             args,
             process,
             output,
+            stderr_output.decode("utf-8"),
         )
 
     return output, process
