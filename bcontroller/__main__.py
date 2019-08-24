@@ -279,7 +279,6 @@ def bisect_start(ctx, bad, good):
 
 @click.command(
     name="run",
-    help="Automatically run git bisect using a script (given by FILENAME) which can tell if the current source code is good or bad",
 )
 @click.argument(
     "filename",
@@ -292,9 +291,12 @@ def bisect_start(ctx, bad, good):
 # TODO: support CC option?
 def bisect_run(ctx, filename):
     """
-    Note that the script (my_script in the above example) should exit with code
-    0 if the current source code is good/old, and exit with a code between 1
-    and 127 (inclusive), except 125, if the current source code is bad/new.
+    Automatically run git bisect using a script (given by FILENAME) which can
+    tell if the current source code is good or bad.
+
+    Note that the script specified by FILENAME should exit with code 0 if the
+    current source code is good/old, and exit with a code between 1 and 127
+    (inclusive), except 125, if the current source code is bad/new.
     """
     warning("For now please run bisection using the git as follows: $ git bisect run kernel-bcontrol bisect from-git")
     # TODO: run `git bisect run <bcontrol bisect-from-git` as a subprocess
@@ -317,7 +319,6 @@ def bisect_run(ctx, filename):
 
 @click.command(
     name="good",
-    help="Mark current revision as GOOD.",
 )
 @click.argument(
     "revs",
@@ -325,12 +326,14 @@ def bisect_run(ctx, filename):
 )
 @click.pass_context
 def bisect_good(ctx, revs):
+    """
+    Mark current revision or revisions specified by REVS as GOOD.
+    """
     dry(bcontroller.bisect_good, ctx.obj["git_tree"], revs)
 
 
 @click.command(
     name="bad",
-    help="Mark current revision as BAD.",
 )
 @click.argument(
     "revs",
@@ -338,12 +341,14 @@ def bisect_good(ctx, revs):
 )
 @click.pass_context
 def bisect_bad(ctx, revs):
+    """
+    Mark current revision or revisions specified by REVS as BAD.
+    """
     dry(bcontroller.bisect_bad, ctx.obj["git_tree"], revs)
 
 
 @click.command(
     name="skip",
-    help="Skip current revision. Try another one.",
 )
 @click.argument(
     "revs",
@@ -351,30 +356,36 @@ def bisect_bad(ctx, revs):
 )
 @click.pass_context
 def bisect_skip(ctx, revs):
+    """
+    Skip current revision. Try another one.
+    """
     dry(bcontroller.bisect_skip, ctx.obj["git_tree"], revs)
 
 
 @click.command(
     name="log",
-    help="Show bisect log.",
 )
 @click.pass_context
 def bisect_log(ctx):
+    """
+    Show bisect log.
+    """
     dry(bcontroller.bisect_log, ctx.obj["git_tree"])
 
 
 @click.command(
     name="reset",
-    help="Reset the bisect.",
 )
 @click.pass_context
 def bisect_reset(ctx):
+    """
+    Reset the bisect.
+    """
     dry(bcontroller.bisect_reset, ctx.obj["git_tree"])
 
 
 @click.command(
     name="from-git",
-    help="Use this sub-command when running `git bisect run` directly. FILENAME is the name of a bisect script.",
 )
 @click.argument(
     "filename",
@@ -386,13 +397,19 @@ def bisect_reset(ctx):
 @click.pass_context
 def bisect_from_git(ctx, filename):
     """
-    Kernel bisect algorithm.
+    This sub-command implements the kernel bisect algorithm. Use this when
+    running `git bisect run <script>` directly. FILENAME is the name of a
+    bisect script.
     """
     git_tree = ctx.obj["git_tree"]
 
     retcode = _BISECT_RET_ABORT
     try:
-        retcode = bcontroller.bisect_from_git(git_tree, filename, DEFAULT_RPMBUILD_TOPDIR)
+        retcode = bcontroller.bisect_from_git(
+            git_tree,
+            filename,
+            DEFAULT_RPMBUILD_TOPDIR,
+        )
     except bcontroller.BControlBisectSkip:
         retcode = _BISECT_RET_SKIP
     except bcontroller.BControlBisectAbort:
