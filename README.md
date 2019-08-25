@@ -43,48 +43,48 @@ EOF
 
 Try to run:
 ```
-$ bysect --version
+$ bcontrol --version
 ```
 
 ## Basic usage
 Check connection and dependencies:
 ```
-$ bysect ping
+$ bcontrol ping
 ```
 
 Bcontrol tool supports the dry-run:
 ```
-$ bysect --dry-run ping
+$ bcontrol --dry-run ping
 ```
 
 Basic information about kernel on all DUTs:
 ```
-$ bysect uname -- --all
+$ bcontrol uname -- --all
 ```
 
 Run specified command on all DUTs:
 ```
-$ bysect sh ls -- -alh
+$ bcontrol sh ls -- -alh
 ```
 
 Reboot all DUTs machines:
 ```
-$ bysect reboot
+$ bcontrol reboot
 ```
 
 Run script.sh in all DUTs and return the output:
 ```
-$ bysect run script.sh
+$ bcontrol run script.sh
 ```
 
 Build kernel and genrate binary RPM package:
 ```
-$ bysect build --jobs 4 -C ~/repos/linux-torvalds-repository
+$ bcontrol build --jobs 4 -C ~/repos/linux-torvalds-repository
 ```
 
 Try to install specified kernel on all DUTs and reboot into it:
 ```
-$ bysect kernel-install --from-rpm /tmp/rpmbuild-kernel-bisect/RPMS/x86_64/kernel-5.1.0_rc3+-5.x86_64.rpm
+$ bcontrol kernel-install --from-rpm /tmp/rpmbuild-kernel-bisect/RPMS/x86_64/kernel-5.1.0_rc3+-5.x86_64.rpm
 ```
 
 ## How to use bcontrol with git-bisect
