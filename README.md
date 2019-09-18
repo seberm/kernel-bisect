@@ -104,7 +104,7 @@ $ bcontrol bisect -C ~/repos/kernel-tree run test-script.sh
 ## Support
 
 ### Supported distros
-* RHEL == 7
+* RHEL >= 7
 * CentOS >= 7
 * Fedora >= 27
 
